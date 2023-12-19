@@ -1,5 +1,9 @@
 <script setup>
 import {RouterLink, RouterView} from 'vue-router'
+import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import {faHouse} from "@fortawesome/free-solid-svg-icons/faHouse";
+import {faArrows} from "@fortawesome/free-solid-svg-icons/faArrows";
+import '@fortawesome/fontawesome-free/css/all.css'
 </script>
 
 <template>
@@ -23,10 +27,16 @@ import {RouterLink, RouterView} from 'vue-router'
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
-        <v-list-item prepend-icon="mdi-folder" title="Word Guesser" value="myfiles"></v-list-item>
+        <font-awesome-icon :icon="faArrows"></font-awesome-icon>
+        <v-icon :icon="faArrows"></v-icon>
+
+        <font-awesome-icon :icon="['fal', 'envelope']" />
+        <v-list-item :prepend-icon="faArrows" title="" link="" >
+          <font-awesome-icon class="d-flex"  :icon="faHouse"></font-awesome-icon>
+        </v-list-item>
         <v-divider></v-divider>
 
-        <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared"></v-list-item>
+        <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared">asdasdasd</v-list-item>
         <v-divider></v-divider>
         <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
         <v-divider></v-divider>
@@ -79,6 +89,11 @@ export default {
   components: {
     //components
   },
+  props:
+      {
+
+      },
+
 
   data: () => ({}),
   async mounted() {

@@ -10,7 +10,7 @@ export default {
 
   data: () => ({
     username: "",
-    email: "",
+    mail: "",
     password: ""
     //
 
@@ -25,7 +25,7 @@ export default {
       try {
         const res = await axios.post("http://localhost:3000/api/user/create", {
           username: this.username,
-          email: this.email,
+          mail: this.mail,
           password: this.password,
 
         }
