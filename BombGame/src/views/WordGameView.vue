@@ -3,100 +3,54 @@
 </script>
 
 <template>
-  <div class="d-flex justify-center">
-    <v-row class="d-inline" >
-      <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-      <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-      <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-    </v-row>
-
-    <v-row class="d-inline" >
-        <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-        <v-col><div class=""><div class="d-flex justify-center">
-          <h1>se</h1>
-          {{ countDown }}
-        </div></div></v-col>
-        <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-      </v-row>
-
-    <v-row class="d-inline" >
-        <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-        <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-        <v-col><div class=""><div class="d-flex justify-center"><v-img height="200" width="200" class="rounded d-flex"  src="../src/assets/profile.png"> </v-img></div></div></v-col>
-    </v-row>
-  </div>
-
-  <v-text-field class="d-inline" ></v-text-field>
-  <v-btn @click="pauseDownTimer" >Pause</v-btn>
-
-
+  <v-row>
+    <v-col>
+      <v-btn @click="this.setLetters" color="black">debug</v-btn>
+    </v-col>
+    <v-col><v-text-field></v-text-field><v-btn>submit</v-btn></v-col>
+    <v-col><h1>letters: {{letters}}</h1></v-col>
+  </v-row>
 </template>
 
 <script>
 
+import {playerMethods} from "../../handelers/playerHandeler";
+import {user} from "../../handelers/UserHandeler";
 import axios from "axios";
+import {gameModeMethods} from "../../handelers/gameModeHandeler";
 
 export default {
   data: () => ({
-    // Axios Setup
-    dataServiceBaseUrl : `http://127.0.0.1:3000`,
-
-  // timer
-    countDown: 4,
-
+    gameModeSettings: null,
+    letters: null,
   }),
-  mounted() {
-    this.requestWords()
-    this.countDownTimer()
+  async mounted() {
+    console.log(await user.getUserData());
+    playerMethods.connectToRoom("yohni:" + "test1");
+    this.letters = await gameModeMethods.getLetters();
+
   },
   methods: {
-    countDownTimer () {
-      if (this.countDown > 0) {
-        setTimeout(() => {
-          this.countDown -= 1
-          this.countDownTimer()
-          if (this.countDown === 0) {
-            this.countDown = 4;
-            this.countDownTimer()
-          }
-        }, 1000)
-      }
-
+    joinRoom() {
+      console.log("press");
+      playerMethods.connectToRoom("newRoom");
     },
 
-    async requestWords() {
-      const data = {
-        x: 1,
-        arr: [1, 2, 3],
-        arr2: [1, [2], 3],
-        users: [{name: 'Peter', surname: 'Griffin'}, {name: 'Thomas', surname: 'Anderson'}],
-      };
-
-      await axios.post(this.dataServiceBaseUrl + "/api/getWords", data,
-          {headers: {'content-type': 'application/x-www-form-urlencoded'}}
-      );
-
-      // axios.get(this.dataServiceBaseUrl + "/api/getWords")
-      //     .then(response => {
-      //       // Handle the successful response
-      //       this.posts = response.data; // Assign the received data to the posts array
-      //       console.log(response.data);
-      //     })
-      //     .catch(error => {
-      //       // Handle any errors that occur during the request
-      //       console.error('There was an error!', error);
-      //     });
-
-
+    fetchGameModeSettings(GameModeName) {
+      axios.get('/api/gameMode/' + GameModeName)
+          .then(async (response) => {
+            this.gameModeSettings = response.data;
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
     },
 
-    pauseDownTimer()
-    {
-
+    async setLetters() {
+      this.letters = await gameModeMethods.getLetters();
     }
-  },
 
-
+  }
 };
 </script>
 

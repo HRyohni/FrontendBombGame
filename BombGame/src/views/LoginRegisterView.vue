@@ -15,9 +15,9 @@ import {faHouse} from "@fortawesome/free-solid-svg-icons/faHouse";
       <v-col>
         <h1>Login</h1>
         <h2>Username</h2>
-        <v-text-field v-model="this.username"  hint="Username" ></v-text-field>
+        <v-text-field v-model="this.username" hint="Username"></v-text-field>
         <h2>Password</h2>
-        <v-text-field  v-model="this.password"  hint="Password"  ></v-text-field>
+        <v-text-field v-model="this.password" hint="Password"></v-text-field>
       </v-col>
     </v-row>
 
@@ -30,75 +30,97 @@ import {faHouse} from "@fortawesome/free-solid-svg-icons/faHouse";
       <v-col>
         <h1>Register</h1>
         <h2>Username</h2>
-        <v-text-field v-model="this.username"  hint="Username" ></v-text-field>
+        <v-text-field v-model="this.username" hint="Username"></v-text-field>
         <h2>email</h2>
-        <v-text-field v-model="this.mail" hint="Username" ></v-text-field>
+        <v-text-field v-model="this.mail" hint="Username"></v-text-field>
         <h2>Password</h2>
-        <v-text-field  v-model="this.password"  hint="Password"  ></v-text-field>
+        <v-text-field v-model="this.password" hint="Password"></v-text-field>
       </v-col>
     </v-row>
-
-
+<v-btn @click="this.onDebug()" color="black" >debug2</v-btn>
 
     <div class="d-flex justify-center">
-      <v-btn @click="this.onLogin" >login</v-btn>
+      <v-btn @click="this.onLogin">login</v-btn>
       <div class="pa-3"></div>
-      <v-btn @click="this.onRegister" >register</v-btn>
-      <h1>{{this.result}}</h1>
+      <v-btn @click="this.onRegister">register</v-btn>
     </div>
+    <h1>{{ this.result }}</h1>
+
   </v-container>
 </template>
 
 <script>
-import * as THREE from 'three';
 import axios from "axios";
-
-
+import router from "@/router";
+import {user} from '../../handelers/UserHandeler'
 export default {
   data: () => ({
-    username: "",
+    username: "yohni",
     mail: "",
-    password: "",
+    password: "yohni",
     result: "",
+    error: "",
   }),
-  mounted() {
-
+  async mounted() {
   },
+
+
   methods: {
-    onLogin()
-    {
+    onLogin() {
       try {
         axios
-            .post("/api/login", { username: this.username, password: this.password })
-            .then((response) => {
-              this.result = response.data.result;
+            .post("/api/login", {username: this.username, password: this.password})
+            .then(async (response) => {
+              if (response.data.result) {
+                await user.updateUserData(response.data.result);
+                console.log(await user.getUserData());
+                await router.push("/");
+              } else {
+                this.error = response.data.error;
+              }
             }, (error) => {
               throw error || new Error(`Request failed`);
             })
-      } catch(error) {
+      } catch (error) {
         // Consider implementing your own error handling logic here
         console.error(error);
-        alert(error.message);
       }
     },
 
-    onRegister()
-    {
+    onRegister() {
       try {
         axios
-            .post("/api/register", { username: this.username,mail: this.mail, password: this.password })
+            .post("/api/register", {username: this.username, mail: this.mail, password: this.password})
             .then((response) => {
-              this.result = response.data.result;
+              if (response.data.result) {
+                router.push("/")
+              }
+
+
             }, (error) => {
               throw error || new Error(`Request failed`);
             })
-      } catch(error) {
+      } catch (error) {
         // Consider implementing your own error handling logic here
         console.error(error);
-        alert(error.message);
       }
     },
+    onDebug()
+    {
+      try {
+        axios
+            .post("/api/add-gamemode", {name: "test", mail: "newmail"})
+            .then((response) => {
+              console.log(response);
 
+            }, (error) => {
+              throw error || new Error(`Request failed`);
+            })
+      } catch (error) {
+        // Consider implementing your own error handling logic here
+        console.error(error);
+      }
+    }
 
 
   },

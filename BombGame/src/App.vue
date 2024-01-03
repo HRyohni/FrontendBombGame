@@ -1,3 +1,4 @@
+n
 <script setup>
 import {RouterLink, RouterView} from 'vue-router'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
@@ -19,33 +20,24 @@ import '@fortawesome/fontawesome-free/css/all.css'
       <v-list>
         <v-list-item
             prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-            title="Yohni"
-            subtitle="matosevic.leo@gmailcom"
+            v-if="this.userData"
+            :title="this.userData.username"
+            :subtitle="this.userData.mail"
         ></v-list-item>
       </v-list>
 
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
-        <font-awesome-icon :icon="faArrows"></font-awesome-icon>
-        <v-icon :icon="faArrows"></v-icon>
 
-        <font-awesome-icon :icon="['fal', 'envelope']" />
-        <v-list-item :prepend-icon="faArrows" title="" link="" >
-          <font-awesome-icon class="d-flex"  :icon="faHouse"></font-awesome-icon>
-        </v-list-item>
+        <v-list-item @click="goToHome"  title="" link="" ></v-list-item>
         <v-divider></v-divider>
+        <v-list-item @click="goToEditProfile()" prepend-icon="mdi-star" title="Edit Profileee" ></v-list-item>
+        <v-list-item @click="goToHome" prepend-icon="mdi-star" title="Home" ></v-list-item>
+        <v-list-item @click="goToLoginRegister" prepend-icon="mdi-star" title="Login/register" ></v-list-item>
 
-        <v-list-item prepend-icon="mdi-account-multiple" title="Shared with me" value="shared">asdasdasd</v-list-item>
-        <v-divider></v-divider>
-        <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
-        <v-divider></v-divider>
+        <v-list-item v-if="this.userData !== null"><v-btn color="red" @click="LogOut" >log out</v-btn></v-list-item>
 
-        <v-list-item prepend-icon="mdi-star" title="Log out" value="starred"></v-list-item>
-        <v-list-item prepend-icon="mdi-star" title="Log out" value="starred"></v-list-item>
-        <v-divider></v-divider>
-        <v-list-item prepend-icon="mdi-star" title="Log out" value="starred"></v-list-item>
-        <v-list-item prepend-icon="mdi-star" title="Log out" value="starred"></v-list-item>
 
       </v-list>
 
@@ -78,34 +70,56 @@ import '@fortawesome/fontawesome-free/css/all.css'
     </v-bottom-navigation>
   </v-layout>
 
-
 </template>
 
 
 <script>
 
+import router from "@/router";
+import {faHome} from "@fortawesome/free-solid-svg-icons";
+import {mapGetters} from "vuex";
+import {user} from "../handelers/UserHandeler"
+
 export default {
   name: "App",
+
   components: {
     //components
   },
   props:
+  
       {
 
       },
 
 
-  data: () => ({}),
+  data: () => ({
+    homeIcon : faHome,
+    userData: null
+  }),
   async mounted() {
-
+    this.userData = user.getUserData();
   },
 
   methods: {
-    promjeniTekst() {
 
 
-    }
+    goToEditProfile()
+    {
+      router.push("/profile-edit")
+    },
 
+    goToLoginRegister()
+    {
+      router.push("/login-register")
+    },
+    goToHome() {
+      router.push("/")
+    },
+    LogOut() {
+      user.logOutUser();
+      user.changeUrlOnLogin();
+    },
 
   },
 };
