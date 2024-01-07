@@ -4,23 +4,42 @@ import io from 'socket.io-client';
 const socket = io('http://localhost:3000'); // Replace with your server URL
 
 
-async function getLetters() {
-    console.log("fetching")
-    socket.on('connect', () => {
-        // Emit 'startGame' event when the client socket connects to the server
-        socket.emit('startGame');
+function getLetters(gameName,room) {
+    return new Promise((resolve, reject) => {
+        socket.emit('startGame',gameName,room);
+
+        socket.on('letters', (letters) => {
+            resolve(letters);
+        });
+
+        // You may want to handle potential errors here
+        socket.on('error', (error) => {
+            reject(error);
+        });
     });
 
-    // Listen for the 'letters' event from the server
-    await socket.on('letters', (lettersData) => {
-        // Handle the received 'letters' data here
-        console.log('Received letters data:', lettersData);
-        // Perform actions with the received data as needed
-        return lettersData;
+}
+
+function checkWord(word, TwoLettersToCheck) {
+    return new Promise((resolve, reject) => {
+        socket.emit('checkWord', "colors", word);
+
+        socket.on('result', (result) => {
+            resolve(result);
+        });
+
+        // You may want to handle potential errors here
+        socket.on('error', (error) => {
+            reject(error);
+        });
     });
+
+
 }
 
 
 export const gameModeMethods = {
-    getLetters
+    getLetters,
+    checkWord
+
 }
