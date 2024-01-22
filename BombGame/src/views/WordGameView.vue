@@ -29,12 +29,15 @@ import io from 'socket.io-client';
 
   <v-row>
     <v-col>
-      <v-btn class="ma-1" @click="this.setLetters" color="black">reset Word</v-btn>
+      <v-btn class="ma-1" @click="this.setLetters" color="black">set Word</v-btn>
       <v-btn class="ma-1" @click="this.joinRoom" color="black">join room</v-btn>
       <v-btn class="ma-1" @click="this.leaveRoom" color="black">disconnected room</v-btn>
+      <v-btn class="ma-1" @click="this.fetchRoomData" color="black">fetch RoomData</v-btn>
+      <v-btn class="ma-1" @click="this.randomFirstPlayer" color="black">random Player</v-btn>
+      <v-btn class="ma-1" @click="this.nextTurn" color="black">next Player</v-btn>
     </v-col>
     <v-col>
-      <v-text-field suffix="ENTER" variant="outlined" label="type word."
+      <v-text-field :disabled="this.isButtonDisabled" suffix="ENTER" variant="outlined" label="type word."
                     :rules="[true ]"
                     @keydown.enter.prevent="this.fetchNewWordIfCorrect(guessedWord)"
                     v-model="guessedWord"></v-text-field>
@@ -55,6 +58,11 @@ export default {
   data: () => ({
     gameModeSettings: null,
     letters: "xx",
+    isButtonDisabled: true,
+    // player that starts this turn
+    mainPlayer: "name",
+    RoomData: null,
+    firstPlayer: null,
 
     guessedWord: "",
     chatMsg: "",
@@ -87,13 +95,26 @@ export default {
     });
 
     this.socket.on('letters', (letters) => {
-      console.log(letters,",,,,,,,,,,,,")
       this.letters = letters;
     });
 
+    this.socket.on('getRoomData', (RoomData) => {
+      this.RoomData = RoomData;
+    });
+
+    this.socket.on('getRoomData', (firstPlayer) => {
+      this.mainPlayer = firstPlayer;
+      this.checkPriority();
+    });
+
+
+    this.socket.on('getNextPlayer', (mainPlayer) => {
+      console.log(mainPlayer);
+    });
   },
   methods: {
     checkWord: async function (word) {
+      this.sendMessageToAll();
       if (word.includes(this.letters))
         return await gameModeMethods.checkWord(word, this.letters);
     },
@@ -122,33 +143,64 @@ export default {
       await this.socket.emit('disconnectFromAllRooms');
       this.messages = [];
       await this.socket.emit('new user', {username: this.username, room: this.roomName});
-      await this.setLetters();
+      //await this.setLetters();
     },
     sendMessage() {
       this.socket.emit('chat message', {
         message: this.message,
         username: this.username,
-        room: this.room
+        room: this.roomName
+      });
+      this.message = ''; // Clear the input field after sending the message
+    },
+
+    sendMessageToAll() {
+      this.socket.emit('chat message', {
+        message: " guessed word correct!",
+        username: this.username,
+        room: this.roomName
       });
       this.message = ''; // Clear the input field after sending the message
     },
 
 
     joinRoom() {
-      playerMethods.connectToRoom(this.roomName);
+      //playerMethods.connectToRoom(this.roomName);
 
     },
     leaveRoom() {
       playerMethods.disconnectFromRoom(this.roomName);
     },
 
-    async   setLetters() {
+    async setLetters() {
       this.letters = await gameModeMethods.getLetters(this.gameName, this.roomName);
     },
 
     clearText() {
       this.guessedWord = "";
     },
+
+    waitForTurn() {
+
+    },
+    nextTurn() {
+      this.socket.emit('nextPlayer', this.roomName,this.mainPlayer);
+    },
+    checkPriority() {
+      if (this.username === this.mainPlayer)
+        this.isButtonDisabled = false;
+
+
+    },
+
+    randomFirstPlayer() {
+      this.socket.emit('randomFirstPlayer', this.roomName);
+
+    },
+
+    fetchRoomData() {
+      this.socket.emit('fetchUsers', this.roomName);
+    }
 
 
   }

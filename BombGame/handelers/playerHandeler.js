@@ -5,7 +5,7 @@ const socket = io('http://localhost:3000'); // Replace with your server URL
 
 function connectToRoom(roomName) {
     socket.join(roomName);
-    console.log("connect to room: ", roomName);
+    console.log("connected to room: ", roomName);
 
 }
 

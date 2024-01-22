@@ -54,17 +54,6 @@ import axios from "axios";
 import router from "@/router";
 import {user} from '../../handelers/UserHandeler'
 export default {
-  data: () => ({
-    username: "yohni",
-    mail: "",
-    password: "yohni",
-    result: "",
-    error: "",
-  }),
-  async mounted() {
-  },
-
-
   methods: {
     onLogin() {
       try {
@@ -86,6 +75,7 @@ export default {
         console.error(error);
       }
     },
+
 
     onRegister() {
       try {
@@ -123,6 +113,17 @@ export default {
     }
 
 
+  },
+  data: () => ({
+    username: "yohni",
+    mail: "",
+    password: "yohni",
+    result: "",
+    error: "",
+  }),
+
+
+  async mounted() {
   },
 };
 </script>
