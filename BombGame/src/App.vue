@@ -29,16 +29,49 @@ import '@fortawesome/fontawesome-free/css/all.css'
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
+        <v-list-item @click="goToHome" title="" link="">
+          <!-- Home Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-home</v-icon>
+          </v-list-item-icon>
+        </v-list-item>
 
-        <v-list-item @click="goToHome"  title="" link="" ></v-list-item>
         <v-divider></v-divider>
-        <v-list-item @click="goToEditProfile()" prepend-icon="mdi-star" title="Edit Profileee" ></v-list-item>
-        <v-list-item @click="goToHome" prepend-icon="mdi-star" title="Home" ></v-list-item>
-        <v-list-item @click="goToLoginRegister" prepend-icon="mdi-star" title="Login/register" ></v-list-item>
 
-        <v-list-item v-if="this.userData !== null"><v-btn color="red" @click="LogOut" >log out</v-btn></v-list-item>
+        <v-list-item @click="goToEditProfile()" title="Edit Profile">
+          <!-- Edit Profile Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-account-edit</v-icon>
+          </v-list-item-icon>
+        </v-list-item>
 
+        <v-list-item @click="goToHome">
+          <!-- Home Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-home</v-icon>
+          </v-list-item-icon>
+          Home
+        </v-list-item>
 
+        <v-list-item @click="goToLoginRegister">
+          <!-- Login/Register Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-account-multiple-plus</v-icon>
+          </v-list-item-icon>
+          Login/Register
+        </v-list-item>
+
+        <v-list-item @click="goToWordGame">
+          <!-- Word Game Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-spelling</v-icon>
+          </v-list-item-icon>
+          Word Game
+        </v-list-item>
+
+        <v-list-item v-if="this.userData !== null">
+          <v-btn color="red" @click="LogOut">Log Out</v-btn>
+        </v-list-item>
       </v-list>
 
     </v-navigation-drawer>
@@ -87,14 +120,11 @@ export default {
     //components
   },
   props:
-  
-      {
-
-      },
+      {},
 
 
   data: () => ({
-    homeIcon : faHome,
+    homeIcon: faHome,
     userData: null
   }),
   async mounted() {
@@ -103,15 +133,15 @@ export default {
 
   methods: {
 
-
-    goToEditProfile()
-    {
+    goToEditProfile() {
       router.push("/profile-edit")
     },
 
-    goToLoginRegister()
-    {
+    goToLoginRegister() {
       router.push("/login-register")
+    },
+    goToWordGame() {
+      router.push("/word-game")
     },
     goToHome() {
       router.push("/")
@@ -120,6 +150,7 @@ export default {
       user.logOutUser();
       user.changeUrlOnLogin();
     },
+
 
   },
 };
