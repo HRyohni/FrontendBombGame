@@ -3,6 +3,21 @@ import io from 'socket.io-client';
 </script>
 
 <template>
+  <v-snackbar
+      v-model="isToast"
+  >
+    {{ this.toastMsg }}
+    <template v-slot:actions>
+      <v-btn
+          color="pink"
+          variant="text"
+          @click="isToast = false"
+      >
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
+
   <v-navigation-drawer :width="292" color="#332941" location="right">
     <v-list-item title="Chat" subtitle="dont be rude  ❤ ️"></v-list-item>
     <v-divider></v-divider>
@@ -34,6 +49,16 @@ import io from 'socket.io-client';
 
     </v-col>
     <v-col>
+      <div>
+        <h1 class="d-flex justify-center">users joined!</h1>
+        <div class="pa-2 d-flex justify-center">
+          <v-btn class="ma-2"></v-btn>
+        </div>
+
+
+
+      </div>
+
       <v-text-field :disabled="this.isButtonDisabled" suffix="ENTER" variant="outlined" label="type word."
                     :rules="[true ]"
                     @keydown.enter.prevent="this.fetchNewWordIfCorrect(guessedWord)"
@@ -50,8 +75,10 @@ import {playerMethods} from "../../handelers/playerHandeler";
 import axios from "axios";
 import {gameModeMethods} from "../../handelers/gameModeHandeler";
 import io from "socket.io-client";
+import {mapGetters} from "vuex";
 
 export default {
+  props: ['gameID'],
   data: () => ({
     gameModeSettings: null,
     letters: "xx",
@@ -72,11 +99,17 @@ export default {
     gameName: 'colors',
     message: '',
     messages: [],
-    socket: null
+    socket: null,
 
+    // Toast
+    toastMsg: "no msg",
+    isToast: false,
 
   }),
   async mounted() {
+    await this.fetchGameModeSettings("color");
+    this.showToast(this.gameModeSettings);
+
     this.socket = io("http://localhost:3000"); // Connect to the Socket.IO server
 
     this.socket.on('chat message', (data) => {
@@ -100,13 +133,12 @@ export default {
     });
 
     this.socket.on('fetchFirstPlayer', (firstPlayer) => {
-      console.log(firstPlayer,"<--");
+      console.log(firstPlayer, "<--");
 
       this.mainPlayer = firstPlayer;
 
       this.checkPriority();
     });
-
 
     this.socket.on('getNextPlayer', (mainPlayer) => {
       console.log(mainPlayer);
@@ -117,25 +149,41 @@ export default {
       console.log("user disconnected!!!!!!!!!!!!!!!!!!!!");
     });
   },
+  computed: {
+    // Use mapGetters to map the getUser getter from the store to a local computed property
+    ...mapGetters(['getUser']),
+    getUsername() {
+      // Access the user object from the store using the computed property
+      return this.getUser;
+    }
+  },
+
   methods: {
+
+
     checkWord: async function (word) {
       if (word.includes(this.letters))
-        if (await gameModeMethods.checkWord(word, this.letters))
-        {
+        if (await gameModeMethods.checkWord(word, this.letters)) {
           this.sendMessageToAll("guessed correct");
           return true;
         }
 
     },
 
-    fetchGameModeSettings(GameModeName) {
-      axios.get('/api/gameMode/' + GameModeName)
+    async fetchGameModeSettings(GameModeName) {
+      await axios.get('/api/gameMode/' + GameModeName)
           .then(async (response) => {
             this.gameModeSettings = response.data;
+            return response.data;
           })
           .catch(function (error) {
             console.log(error);
           })
+    },
+
+    async fetchRoomSettings(roomID)
+    {
+
     },
 
     async fetchNewWordIfCorrect(guessedWord) {
@@ -151,7 +199,6 @@ export default {
     async joinChat() {
       await this.socket.emit('disconnectFromAllRooms');
       this.messages = [];
-      console.log("joined chat");
       await this.socket.emit('new user', {username: this.username, room: this.roomName});
       //await this.setLetters();
     },
@@ -174,11 +221,11 @@ export default {
       this.message = ''; // Clear the input field after sending the message
     },
 
-
     joinRoom() {
       //playerMethods.connectToRoom(this.roomName);
 
     },
+
     leaveRoom() {
       playerMethods.disconnectFromRoom(this.roomName);
     },
@@ -198,6 +245,7 @@ export default {
     nextTurn() {
       this.socket.emit('nextPlayer', this.roomName, this.mainPlayer);
     },
+
     checkPriority() {
       if (this.username === this.mainPlayer)
         this.isButtonDisabled = false;
@@ -211,12 +259,15 @@ export default {
     fetchRoomData() {
       this.socket.emit('fetchUsers', this.roomName);
     },
-    async startGame()
-    {
+
+    async startGame() {
       this.randomFirstPlayer()
-    }
+    },
 
-
+    showToast(message) {
+      this.toastMsg = message;
+      this.isToast = !this.isToast;
+    },
   }
 }
 </script>
