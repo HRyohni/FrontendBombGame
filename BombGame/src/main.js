@@ -21,6 +21,7 @@ const dataServiceBaseUrl = `http://127.0.0.1:${port}`;
 app.use(router);
 app.use(store);
 
+
 // Vuetify
 const vuetify = createVuetify({
     components,

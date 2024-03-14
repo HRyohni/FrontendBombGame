@@ -30,11 +30,8 @@ import io from 'socket.io-client';
   <v-row>
     <v-col>
       <v-btn class="ma-1" @click="this.setLetters" color="black">set Word</v-btn>
-      <v-btn class="ma-1" @click="this.joinRoom" color="black">join room</v-btn>
-      <v-btn class="ma-1" @click="this.leaveRoom" color="black">disconnected room</v-btn>
-      <v-btn class="ma-1" @click="this.fetchRoomData" color="black">fetch RoomData</v-btn>
-      <v-btn class="ma-1" @click="this.randomFirstPlayer" color="black">random Player</v-btn>
-      <v-btn class="ma-1" @click="this.nextTurn" color="black">next Player</v-btn>
+      <v-btn class="ma-1" @click="this.startGame" color="black">start game</v-btn>
+
     </v-col>
     <v-col>
       <v-text-field :disabled="this.isButtonDisabled" suffix="ENTER" variant="outlined" label="type word."
@@ -58,7 +55,7 @@ export default {
   data: () => ({
     gameModeSettings: null,
     letters: "xx",
-    isButtonDisabled: true,
+    isButtonDisabled: false,
     // player that starts this turn
     mainPlayer: "name",
     RoomData: null,
@@ -102,8 +99,11 @@ export default {
       this.RoomData = RoomData;
     });
 
-    this.socket.on('getRoomData', (firstPlayer) => {
+    this.socket.on('fetchFirstPlayer', (firstPlayer) => {
+      console.log(firstPlayer,"<--");
+
       this.mainPlayer = firstPlayer;
+
       this.checkPriority();
     });
 
@@ -111,12 +111,21 @@ export default {
     this.socket.on('getNextPlayer', (mainPlayer) => {
       console.log(mainPlayer);
     });
+
+    this.socket.on('disconnect', function () {
+
+      console.log("user disconnected!!!!!!!!!!!!!!!!!!!!");
+    });
   },
   methods: {
     checkWord: async function (word) {
-      this.sendMessageToAll();
       if (word.includes(this.letters))
-        return await gameModeMethods.checkWord(word, this.letters);
+        if (await gameModeMethods.checkWord(word, this.letters))
+        {
+          this.sendMessageToAll("guessed correct");
+          return true;
+        }
+
     },
 
     fetchGameModeSettings(GameModeName) {
@@ -142,9 +151,11 @@ export default {
     async joinChat() {
       await this.socket.emit('disconnectFromAllRooms');
       this.messages = [];
+      console.log("joined chat");
       await this.socket.emit('new user', {username: this.username, room: this.roomName});
       //await this.setLetters();
     },
+
     sendMessage() {
       this.socket.emit('chat message', {
         message: this.message,
@@ -154,9 +165,9 @@ export default {
       this.message = ''; // Clear the input field after sending the message
     },
 
-    sendMessageToAll() {
+    sendMessageToAll(message) {
       this.socket.emit('chat message', {
-        message: " guessed word correct!",
+        message: message,
         username: this.username,
         room: this.roomName
       });
@@ -183,14 +194,13 @@ export default {
     waitForTurn() {
 
     },
+
     nextTurn() {
-      this.socket.emit('nextPlayer', this.roomName,this.mainPlayer);
+      this.socket.emit('nextPlayer', this.roomName, this.mainPlayer);
     },
     checkPriority() {
       if (this.username === this.mainPlayer)
         this.isButtonDisabled = false;
-
-
     },
 
     randomFirstPlayer() {
@@ -200,6 +210,10 @@ export default {
 
     fetchRoomData() {
       this.socket.emit('fetchUsers', this.roomName);
+    },
+    async startGame()
+    {
+      this.randomFirstPlayer()
     }
 
 

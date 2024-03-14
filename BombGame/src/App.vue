@@ -69,6 +69,23 @@ import '@fortawesome/fontawesome-free/css/all.css'
           Word Game
         </v-list-item>
 
+        <v-list-item @click="goToCreateNewRoom">
+          <!-- Word Game Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-spelling</v-icon>
+          </v-list-item-icon>
+          create new room
+        </v-list-item>
+
+
+   <v-list-item @click="goToRoomList">
+          <!-- Word Game Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-spelling</v-icon>
+          </v-list-item-icon>
+          RoomList
+        </v-list-item>
+
         <v-list-item v-if="this.userData !== null">
           <v-btn color="red" @click="LogOut">Log Out</v-btn>
         </v-list-item>
@@ -133,22 +150,28 @@ export default {
 
   methods: {
 
-    goToEditProfile() {
-      router.push("/profile-edit")
+    LogOut() {
+      user.logOutUser();
+      user.changeUrlOnLogin();
     },
 
-    goToLoginRegister() {
-      router.push("/login-register")
+    goToCreateNewRoom() {
+      router.push("/new-room")
     },
-    goToWordGame() {
-      router.push("/word-game")
+    goToEditProfile() {
+      router.push("/profile-edit")
     },
     goToHome() {
       router.push("/")
     },
-    LogOut() {
-      user.logOutUser();
-      user.changeUrlOnLogin();
+    goToLoginRegister() {
+      router.push("/login-register")
+    },
+    goToRoomList() {
+      router.push("/room-list")
+    },
+    goToWordGame() {
+      router.push("/word-game")
     },
 
 
