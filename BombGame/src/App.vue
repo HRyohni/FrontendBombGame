@@ -1,4 +1,3 @@
-n
 <script setup>
 import {RouterLink, RouterView} from 'vue-router'
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
@@ -9,6 +8,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
 
 <template>
   <v-layout>
+
     <!--     For higher resolution and smaller -->
     <v-navigation-drawer
         elevation="6"
@@ -21,7 +21,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
         <v-list-item
             prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
             v-if="this.userData"
-            :title="this.userData.username"
+            :title=" this.userData.username "
             :subtitle="this.userData.mail"
         ></v-list-item>
       </v-list>
@@ -142,10 +142,10 @@ export default {
 
   data: () => ({
     homeIcon: faHome,
-    userData: null
+    userData: "unkown"
   }),
   async mounted() {
-    this.userData = user.getUserData();
+     this.userData = await this.fetchUserData()
   },
 
   methods: {
@@ -174,6 +174,9 @@ export default {
       router.push("/word-game")
     },
 
+    async fetchUserData() {
+      return await user.getUserData();
+    },
 
   },
 };

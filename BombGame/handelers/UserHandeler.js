@@ -5,6 +5,16 @@ import axios from "axios"; // Adjust the path according to your project structur
 // Access the getter to get user data
 
 
+// user.js
+
+const USER_DATA_KEY = 'userData';
+
+
+
+
+
+
+
 function _isNullOrUndefined(value) {
     return value === null || value === undefined || value === {};
 }
@@ -48,9 +58,9 @@ async function  _checkUserAuth() {
 }
 
 async function getUserData() {
-    return await store.getters.getUser;
+    const userDataString = localStorage.getItem(USER_DATA_KEY);
+    return userDataString ? JSON.parse(userDataString) : null;
 }
-
 
 
 
@@ -66,7 +76,11 @@ async function logOutUser() {
 
 async function updateUserData(newUserData) {
     try {
+        // Update Vuex store
         await store.dispatch('updateUser', newUserData);
+
+        // Store user data in local storage
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(newUserData));
     } catch (error) {
         console.error('Failed to update user data:', error);
     }
