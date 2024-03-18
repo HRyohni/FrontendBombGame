@@ -3,10 +3,10 @@ import io from 'socket.io-client';
 </script>
 
 <template>
+  <v-btn @click="this.leaveRoom">leave room</v-btn>
   <v-snackbar
       v-model="isToast"
   >
-    {{ this.toastMsg }}
     <template v-slot:actions>
       <v-btn
           color="pink"
@@ -24,16 +24,18 @@ import io from 'socket.io-client';
 
 
     <div>
-      <div class="d-flex">
-        <v-text-field class="pa-1" v-model="username" placeholder="your username"></v-text-field>
-        <v-text-field class="pa-1" v-model="roomName"></v-text-field>
-      </div>
-
-
+      <h3 class="ma-3">chat</h3>
       <v-card class="pa-2 " height="500" color="#332941">
+
         <ul>
-          <li v-for="(msg, index) in messages" :key="index">{{ msg }}</li>
+          <li v-for="(msg, index) in messages" :key="index">
+            <div>
+              {{ msg.username+": "+ msg.message }}
+            </div>
+
+          </li>
         </ul>
+
       </v-card>
 
       <v-text-field suffix="ENT" @keydown.enter.prevent="sendMessage" v-model="message"
@@ -51,9 +53,17 @@ import io from 'socket.io-client';
     <v-col>
       <div>
         <h1 class="d-flex justify-center">users joined!</h1>
-        <div class="pa-2 d-flex justify-center">
-          <v-btn class="ma-2"></v-btn>
-        </div>
+        <v-card>
+          <div v-for="user in this.roomSettings.playersName">
+            <v-card color="blue" class="ma-2 "  >
+              <v-avatar image="https://cdn.discordapp.com/avatars/718124223347818497/1d03ebf4cf9d399835133ba85edbbe7a.webp?size=80" size="70"></v-avatar>
+              <p class="d-flex justify-center">{{ user }}</p>
+            </v-card>
+
+          </div>
+          <v-btn color="green">Ready</v-btn>
+        </v-card>
+
 
 
       </div>
@@ -85,7 +95,7 @@ export default {
     playersData: null,
 
     gameModeSettings: null,
-    roomSettings: null,
+    roomSettings: "nullString",
     letters: "xx",
     isButtonDisabled: false,
     // player that starts this turn
@@ -103,7 +113,7 @@ export default {
     username: '',
     gameName: 'colors',
     message: '',
-    messages: [],
+    messages: [{username: "username",message: "new message"}],
     socket: null,
 
     // Toast
@@ -124,21 +134,21 @@ export default {
   async mounted() {
     this.socket = io("http://localhost:3000"); // Connect to the Socket.IO server
 
-    // fetch data
     this.playersData = await this.fetchUserData();
     this.username = this.playersData.username;
     this.roomSettings = await this.fetchRoomSettings(this.gameID);
     this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
-    await this.joinSocketRoom(this.roomName,this.username)
-    this.showToast(this.username);
-    //await this.leaveRoom();
-    //await this.updateSettings();
+    await this.joinSocketRoom(this.gameID,this.username)
+    await this.updateSettings();
+    console.log(this.roomSettings.playersName);
+   // await this.leaveRoom();
+
 
     // join room
 
 
-    this.socket.on('chat message', (data) => {
-      this.messages.push(`${data.username}: ${data.message}`);
+    this.socket.on('newMessage', (data) => {
+      this.messages.push(data);
     });
 
     this.socket.on('user joined', (username) => {
@@ -199,7 +209,6 @@ export default {
       }
     },
 
-
     async fetchGameModeSettings(GameModeName) {
       try {
         const response = await axios.get('/api/gameMode/' + GameModeName);
@@ -209,7 +218,6 @@ export default {
         return null; // Return null or handle the error as per your requirement
       }
     },
-
 
     async updateSettings() {
       this.roomSettings.playersName.push(this.username)
@@ -222,6 +230,16 @@ export default {
       await this.socket.emit('joinRoom', roomName, username);
     },
 
+    sendMessage() {
+      const message = {
+        message: this.message,
+        username: this.username,
+        room: this.gameID
+      };
+      this.socket.emit('sendMessage', message);
+      this.messages.push(message);
+      this.message = "";
+    },
 
     checkWord: async function (word) {
       if (word.includes(this.letters))
@@ -242,31 +260,6 @@ export default {
         return false;
       }
     },
-
-
-    sendMessage() {
-      this.socket.emit('chat message', {
-        message: this.message,
-        username: this.username,
-        room: this.roomName
-      });
-      this.message = ''; // Clear the input field after sending the message
-    },
-
-    sendMessageToAll(message) {
-      this.socket.emit('chat message', {
-        message: message,
-        username: this.username,
-        room: this.roomName
-      });
-      this.message = ''; // Clear the input field after sending the message
-    },
-
-    joinRoom() {
-      //playerMethods.connectToRoom(this.roomName);
-
-    },
-
 
 
     async setLetters() {
@@ -290,6 +283,7 @@ export default {
         this.isButtonDisabled = false;
     },
 
+
     randomFirstPlayer() {
       this.socket.emit('randomFirstPlayer', this.roomName);
 
@@ -303,15 +297,15 @@ export default {
       this.randomFirstPlayer()
     },
 
-    showToast(message) {
-      this.toastMsg = message;
+    async showToast(message) {
+      this.toastMsg = await message;
       this.isToast = !this.isToast;
     },
 
     async leaveRoom() {
       try {
         // Emit the socket event to disconnect the user from the room
-        await this.socket.emit('disconnectUserFromRoom', this.roomName, this.username);
+        await this.socket.emit('disconnectUserFromRoom', this.gameID, this.username);
         console.log(`Successfully left room ${this.roomName}`);
       } catch (error) {
         console.error('Error leaving room:', error);
