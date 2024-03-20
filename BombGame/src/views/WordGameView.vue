@@ -30,7 +30,7 @@ import io from 'socket.io-client';
         <ul>
           <li v-for="(msg, index) in messages" :key="index">
             <div>
-              {{ msg.username+": "+ msg.message }}
+              {{ msg.username + ": " + msg.message }}
             </div>
 
           </li>
@@ -44,6 +44,38 @@ import io from 'socket.io-client';
   </v-navigation-drawer>
 
 
+  <v-card class="">
+    <h1 class="d-flex justify-center">GET READY!</h1>
+    <div class="d-flex justify-center">
+      <div class="" v-for="user in this.roomSettings.playersName" :key="user">
+        <div class="ma-2">
+          <v-avatar class="justify-center d-flex"
+                    image="https://cdn.discordapp.com/avatars/718124223347818497/1d03ebf4cf9d399835133ba85edbbe7a.webp?size=80"
+                    size="70"></v-avatar>
+          <p class="d-flex justify-center">{{ user }}</p>
+          <v-btn v-if="!isPlayerReadyStatus(user)" variant="outlined" color="blue">not READY</v-btn>
+          <v-btn v-if="isPlayerReadyStatus(user)" color="green">READY</v-btn>
+        </div>
+
+
+      </div>
+    </div>
+
+    <div class="justify-center d-flex ma-2">
+
+
+      <v-btn v-if="this.isPlayerReady" @click="this.setReady()" class="justify-center d-flex" color="green">set Ready
+      </v-btn>
+      <v-btn v-if="!this.isPlayerReady" @click="this.setNotReady()" variant="outlined" class="justify-center d-flex"
+             color="red">set Not Ready
+      </v-btn>
+    </div>
+    <div class="justify-end d-flex ma-5">
+      <v-btn v-if="this.isPlayerHost" :disabled="!this.isAllPlayersReady" color="red">Start Game</v-btn>
+    </div>
+  </v-card>
+
+
   <v-row>
     <v-col>
       <v-btn class="ma-1" @click="this.setLetters" color="black">set Word</v-btn>
@@ -51,22 +83,7 @@ import io from 'socket.io-client';
 
     </v-col>
     <v-col>
-      <div>
-        <h1 class="d-flex justify-center">users joined!</h1>
-        <v-card>
-          <div v-for="user in this.roomSettings.playersName">
-            <v-card color="blue" class="ma-2 "  >
-              <v-avatar image="https://cdn.discordapp.com/avatars/718124223347818497/1d03ebf4cf9d399835133ba85edbbe7a.webp?size=80" size="70"></v-avatar>
-              <p class="d-flex justify-center">{{ user }}</p>
-            </v-card>
 
-          </div>
-          <v-btn color="green">Ready</v-btn>
-        </v-card>
-
-
-
-      </div>
 
       <v-text-field :disabled="this.isButtonDisabled" suffix="ENTER" variant="outlined" label="type word."
                     :rules="[true ]"
@@ -103,6 +120,11 @@ export default {
     RoomData: null,
     firstPlayer: null,
 
+    isPlayerReady: true,
+    isPlayerHost: false,
+    playersReady: [],
+    isAllPlayersReady: false,
+
     guessedWord: "",
     chatMsg: "",
 
@@ -113,7 +135,7 @@ export default {
     username: '',
     gameName: 'colors',
     message: '',
-    messages: [{username: "username",message: "new message"}],
+    messages: [{username: "username", message: "new message"}],
     socket: null,
 
     // Toast
@@ -138,25 +160,15 @@ export default {
     this.username = this.playersData.username;
     this.roomSettings = await this.fetchRoomSettings(this.gameID);
     this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
-    await this.joinSocketRoom(this.gameID,this.username)
+    await this.joinSocketRoom(this.gameID, this.username)
     await this.updateSettings();
-    console.log(this.roomSettings.playersName);
-   // await this.leaveRoom();
+    this.checkHost();
 
 
-    // join room
 
 
-    this.socket.on('newMessage', (data) => {
-      this.messages.push(data);
-    });
-
-    this.socket.on('user joined', (username) => {
-      this.messages.push(`${username} joined the chat`);
-    });
-
-    this.socket.on('user left', (username) => {
-      this.messages.push(`${username} left the chat`);
+    this.socket.on('newMessage', (username,message) => {
+      this.messages.push({username: username, message: message});
     });
 
     this.socket.on('letters', (letters) => {
@@ -179,10 +191,25 @@ export default {
       console.log(mainPlayer);
     });
 
-    this.socket.on('disconnect', function () {
-
-      console.log("user disconnected!!!!!!!!!!!!!!!!!!!!");
+    this.socket.on('getPlayerReady', async (player) => {
+      await this.getPlayerReady(player);
+      this.isAllPlayersReady = this.checkIfAllPlayersReady();
     });
+
+    this.socket.on('getPlayerNotReady', async (player) => {
+      await this.setPlayerNotReady(player);
+      this.isAllPlayersReady = this.checkIfAllPlayersReady();
+    });
+
+    this.socket.on('newPlayerJoined', async (player) => {
+      this.roomSettings = await this.fetchRoomSettings(this.gameID);
+    });
+
+    this.socket.on('playerLeftParty', async () => {
+      this.roomSettings = await this.fetchRoomSettings(this.gameID);
+    });
+
+
   },
   computed: {
     // Use mapGetters to map the getUser getter from the store to a local computed property
@@ -224,9 +251,9 @@ export default {
       await axios.post("/api/room/update-room", {roomID: this.gameID, data: this.roomSettings});
     },
 
-    async joinSocketRoom(roomName,username) {
-      // todo: check if disconnect is correct
-      //await this.socket.emit('disconnectFromAllRooms');
+    async joinSocketRoom(roomName, username) {
+
+      await this.socket.emit('userLeft',this.username, this.gameID,"Left and didnt say goodbye" );
       await this.socket.emit('joinRoom', roomName, username);
     },
 
@@ -250,7 +277,6 @@ export default {
 
     },
 
-
     async fetchNewWordIfCorrect(guessedWord) {
       this.clearText();
       if (await this.checkWord(guessedWord)) {
@@ -270,10 +296,6 @@ export default {
       this.guessedWord = "";
     },
 
-    waitForTurn() {
-
-    },
-
     nextTurn() {
       this.socket.emit('nextPlayer', this.roomName, this.mainPlayer);
     },
@@ -283,14 +305,9 @@ export default {
         this.isButtonDisabled = false;
     },
 
-
     randomFirstPlayer() {
       this.socket.emit('randomFirstPlayer', this.roomName);
 
-    },
-
-    fetchRoomData() {
-      this.socket.emit('fetchUsers', this.roomName);
     },
 
     async startGame() {
@@ -306,11 +323,58 @@ export default {
       try {
         // Emit the socket event to disconnect the user from the room
         await this.socket.emit('disconnectUserFromRoom', this.gameID, this.username);
+        await this.socket.emit('userLeft',this.username, this.gameID,"left" );
+        await this.socket.to(this.gameID).emit("playerLeftParty");
         console.log(`Successfully left room ${this.roomName}`);
       } catch (error) {
         console.error('Error leaving room:', error);
         // Handle the error appropriately (e.g., display an error message to the user)
       }
+    },
+
+    checkHost() {
+      if (this.roomSettings.host === this.username) {
+        this.isPlayerHost = !this.isPlayerHost;
+      }
+    },
+
+    async setReady() {
+      this.isPlayerReady = !this.isPlayerReady;
+      this.playersReady.push(this.username)
+      await this.socket.emit('sendPlayerReady', this.username, this.gameID);
+    },
+
+    async setNotReady() {
+      this.isPlayerReady = !this.isPlayerReady;
+      this.playersReady = this.playersReady.filter(p => p !== this.username);
+      await this.socket.emit('sendPlayerNotReady', this.username, this.gameID);
+    },
+
+    isPlayerReadyStatus(player) {
+      return this.playersReady.includes(player);
+    },
+
+    async getPlayerReady(player) {
+      console.log("user: ", player, " is ready");
+      this.playersReady.push(player);
+      console.log("Players Ready:", this.playersReady); // Verify that playersReady is updated
+    },
+
+    async setPlayerNotReady(player) {
+
+      console.log("user: ", player, " is NOT ready");
+      this.playersReady = this.playersReady.filter(p => p !== player);
+      console.log("Players not Ready:", this.playersReady); // Verify that playersReady is updated
+    },
+
+    async checkIfAllPlayersReady() {
+      return this.arraysAreEqual(this.this.roomSettings.playersName, this.playersReady)
+    },
+
+    arraysAreEqual(arr1, arr2) {
+      // todo fix
+      return arr1.length === arr2.length;
+
     }
 
 
