@@ -1,5 +1,7 @@
 <script setup>
 import io from 'socket.io-client';
+
+
 </script>
 
 <template>
@@ -63,7 +65,6 @@ import io from 'socket.io-client';
 
     <div class="justify-center d-flex ma-2">
 
-
       <v-btn v-if="this.isPlayerReady" @click="this.setReady()" class="justify-center d-flex" color="green">set Ready
       </v-btn>
       <v-btn v-if="!this.isPlayerReady" @click="this.setNotReady()" variant="outlined" class="justify-center d-flex"
@@ -75,25 +76,24 @@ import io from 'socket.io-client';
     </div>
   </v-card>
 
-
-  <v-row>
-    <v-col>
-      <v-btn class="ma-1" @click="this.setLetters" color="black">set Word</v-btn>
-      <v-btn class="ma-1" @click="this.startGame" color="black">start game</v-btn>
-
-    </v-col>
-    <v-col>
-
-
-      <v-text-field :disabled="this.isButtonDisabled" suffix="ENTER" variant="outlined" label="type word."
-                    :rules="[true ]"
-                    @keydown.enter.prevent="this.fetchNewWordIfCorrect(guessedWord)"
-                    v-model="guessedWord"></v-text-field>
-      <v-btn @click="this.fetchNewWordIfCorrect(guessedWord)">submit</v-btn>
-    </v-col>
-    <v-col><h1>letters: {{ this.letters }}</h1></v-col>
-  </v-row>
-  <v-btn @click="this.joinSocketRoom">join</v-btn>
+  <div class="ma-4">
+    <v-row class="justify-center d-flex">
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+    </v-row>
+    <v-row class="justify-center d-flex">
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+      <v-col class=""><v-img id="arrowImage" src="../src/assets/arrow.png"></v-img></v-col>
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+    </v-row>
+    <v-row class="justify-center d-flex">
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
+    </v-row>
+<v-btn @click="rotateArrow()">rotate</v-btn>
+  </div>
 </template>
 
 <script>
@@ -163,11 +163,11 @@ export default {
     await this.joinSocketRoom(this.gameID, this.username)
     await this.updateSettings();
     this.checkHost();
+    await this.setLetters();
+    console.log("this letters", this.letters);
 
 
-
-
-    this.socket.on('newMessage', (username,message) => {
+    this.socket.on('newMessage', (username, message) => {
       this.messages.push({username: username, message: message});
     });
 
@@ -253,7 +253,7 @@ export default {
 
     async joinSocketRoom(roomName, username) {
 
-      await this.socket.emit('userLeft',this.username, this.gameID,"Left and didnt say goodbye" );
+      await this.socket.emit('userLeft', this.username, this.gameID, "Left and didnt say goodbye");
       await this.socket.emit('joinRoom', roomName, username);
     },
 
@@ -323,7 +323,7 @@ export default {
       try {
         // Emit the socket event to disconnect the user from the room
         await this.socket.emit('disconnectUserFromRoom', this.gameID, this.username);
-        await this.socket.emit('userLeft',this.username, this.gameID,"left" );
+        await this.socket.emit('userLeft', this.username, this.gameID, "left");
         await this.socket.to(this.gameID).emit("playerLeftParty");
         console.log(`Successfully left room ${this.roomName}`);
       } catch (error) {
@@ -375,9 +375,17 @@ export default {
       // todo fix
       return arr1.length === arr2.length;
 
+    },
+
+    rotateArrow() {
+      const arrowImage = document.getElementById('arrowImage');
+      // Get the current rotation angle from the image style or default to 0
+      let rotation = parseFloat(arrowImage.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
+      // Increment rotation by 45 degrees
+      rotation += 45;
+      // Apply the new rotation
+      arrowImage.style.transform = `rotate(${rotation}deg)`;
     }
-
-
   },
 
 }
