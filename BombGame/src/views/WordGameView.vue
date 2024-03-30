@@ -17,6 +17,7 @@ import io from 'socket.io-client';
       >
         Close
       </v-btn>
+      <h4>{{ this.toastMsg }}</h4>
     </template>
   </v-snackbar>
 
@@ -70,29 +71,64 @@ import io from 'socket.io-client';
       <v-btn v-if="!this.isPlayerReady" @click="this.setNotReady()" variant="outlined" class="justify-center d-flex"
              color="red">set Not Ready
       </v-btn>
+      <v-btn @click="this.startTimer();" class="ma-2" color="black">start timer</v-btn>
+      {{ this.timer }}
     </div>
+
     <div class="justify-end d-flex ma-5">
-      <v-btn v-if="this.isPlayerHost" :disabled="!this.isAllPlayersReady" color="red">Start Game</v-btn>
+      <v-btn v-if="this.isPlayerHost" :disabled="!this.isAllPlayersReady" @click="this.StartGame()" color="red">Start
+        Game
+      </v-btn>
     </div>
   </v-card>
 
   <div class="ma-4">
-    <v-row class="justify-center d-flex">
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-    </v-row>
-    <v-row class="justify-center d-flex">
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-      <v-col class=""><v-img id="arrowImage" src="../src/assets/arrow.png"></v-img></v-col>
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-    </v-row>
-    <v-row class="justify-center d-flex">
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-      <v-col><v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card></v-col>
-    </v-row>
-<v-btn @click="rotateArrow()">rotate</v-btn>
+    <!--    <v-row class="justify-center d-flex">-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--    </v-row>-->
+    <!--    <v-row class="justify-center d-flex">-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--      &lt;!&ndash;todo      <v-col class=""><v-img id="arrowImage" src="../src/assets/arrow.png"></v-img></v-col> &ndash;&gt;-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1></h1></v-card>-->
+    <!--      </v-col>-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--    </v-row>-->
+    <!--    <v-row class="justify-center d-flex">-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--      <v-col>-->
+    <!--        <v-card height="150px" width="100%" class="justify-center d-flex"><h1>playerName</h1></v-card>-->
+    <!--      </v-col>-->
+    <!--    </v-row>-->
+
+    <h1 class="d-flex justify-center">Letters:</h1>
+    <h2 class="d-flex justify-center">{{ this.letters }}</h2>
+
+    <div class="ma-15 d-flex justify-center">
+      <v-text-field :disabled="!this.isCurrentPlayersTurn" suffix="ENT" @keydown.enter.prevent="sendMessage"
+                    hint="write a word" placeholder="write a word"></v-text-field>
+      <v-btn class="ma-2" color="green">Guess</v-btn>
+    </div>
+
+
+    <v-btn @click="rotateArrow()">rotate</v-btn>
   </div>
 </template>
 
@@ -116,19 +152,15 @@ export default {
     letters: "xx",
     isButtonDisabled: false,
     // player that starts this turn
-    mainPlayer: "name",
     RoomData: null,
-    firstPlayer: null,
 
     isPlayerReady: true,
     isPlayerHost: false,
+    isCurrentPlayersTurn: false,
     playersReady: [],
     isAllPlayersReady: false,
 
     guessedWord: "",
-    chatMsg: "",
-
-    roomName: "room1",
     isCorrectAnswer: true,
 
     // messages
@@ -141,8 +173,15 @@ export default {
     // Toast
     toastMsg: "no msg",
     isToast: false,
+    //timer
+    timer: 0, // Start the timer at 3 seconds
+    // Add timer interval variable to store setInterval reference
+    timerInterval: null
 
   }),
+  beforeUnmount() {
+    clearInterval(this.timerInterval);
+  },
 
   async unmounted() {
     try {
@@ -159,13 +198,16 @@ export default {
     this.playersData = await this.fetchUserData();
     this.username = this.playersData.username;
     this.roomSettings = await this.fetchRoomSettings(this.gameID);
+    this.timer = parseInt(this.roomSettings.timer.slice(0, -1))
     this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
+
     await this.joinSocketRoom(this.gameID, this.username)
     await this.updateSettings();
     this.checkHost();
-    await this.setLetters();
-    console.log("this letters", this.letters);
+    await this.getLetters();
 
+
+    //await this.setLetters();
 
     this.socket.on('newMessage', (username, message) => {
       this.messages.push({username: username, message: message});
@@ -179,12 +221,14 @@ export default {
       this.RoomData = RoomData;
     });
 
-    this.socket.on('fetchFirstPlayer', (firstPlayer) => {
-      console.log(firstPlayer, "<--");
+    this.socket.on('fetchFirstPlayer', async (firstPlayer) => {
+      this.startTimer();
+      await this.showToast("first player is: " + firstPlayer)
+      this.isCurrentPlayersTurn = firstPlayer === this.username;
+    });
 
-      this.mainPlayer = firstPlayer;
-
-      this.checkPriority();
+    this.socket.on('receiveLetters', (letters) => {
+      this.letters = letters;
     });
 
     this.socket.on('getNextPlayer', (mainPlayer) => {
@@ -207,6 +251,10 @@ export default {
 
     this.socket.on('playerLeftParty', async () => {
       this.roomSettings = await this.fetchRoomSettings(this.gameID);
+    });
+
+    this.socket.on('timerGetUpdate', (timerValue) => {
+      this.timer = timerValue;
     });
 
 
@@ -253,8 +301,16 @@ export default {
 
     async joinSocketRoom(roomName, username) {
 
-      await this.socket.emit('userLeft', this.username, this.gameID, "Left and didnt say goodbye");
+      await this.socket.emit('userLeft', this.username, this.gameID, "is here finally here");
       await this.socket.emit('joinRoom', roomName, username);
+    },
+
+    async StartGame() {
+      this.randomFirstPlayer();
+    },
+
+    randomFirstPlayer() {
+      this.socket.emit('pickRandomFirstPlayer', this.gameID, this.roomSettings.playersName);
     },
 
     sendMessage() {
@@ -268,12 +324,33 @@ export default {
       this.message = "";
     },
 
-    checkWord: async function (word) {
-      if (word.includes(this.letters))
-        if (await gameModeMethods.checkWord(word, this.letters)) {
-          this.sendMessageToAll("guessed correct");
-          return true;
+    startTimer() {
+      this.getLetters();
+      // Clear any existing timer interval
+      clearInterval(this.timerInterval);
+
+      // Start a new timer interval that updates every second
+      this.timerInterval = setInterval(() => {
+        // Decrement timer by 1 second
+        if (this.timer > 0) {
+          this.timer--;
+
+          // Emit the timer value to the server
+          this.socket.emit('timerUpdate', this.gameID, this.timer);
+        } else {
+          // Timer has reached 0, stop the timer and handle timeout scenario
+          clearInterval(this.timerInterval); // Stop the timer interval
+          this.timer = parseInt(this.roomSettings.timer.slice(0, -1))
         }
+      }, 1000); // 1000 milliseconds = 1 second
+    },
+
+    checkWord: async function (word) {
+      if (word.includes(this.letters)) {
+        this.socket.emit('checkWord', this.gameID, this.timer);
+
+      }
+
 
     },
 
@@ -288,8 +365,8 @@ export default {
     },
 
 
-    async setLetters() {
-      this.letters = await gameModeMethods.getLetters(this.gameName, this.roomName);
+    async getLetters() {
+      this.socket.emit('getLetters', this.gameID, this.gameModeSettings.words);
     },
 
     clearText() {
@@ -300,22 +377,13 @@ export default {
       this.socket.emit('nextPlayer', this.roomName, this.mainPlayer);
     },
 
-    checkPriority() {
-      if (this.username === this.mainPlayer)
-        this.isButtonDisabled = false;
-    },
-
-    randomFirstPlayer() {
-      this.socket.emit('randomFirstPlayer', this.roomName);
-
-    },
 
     async startGame() {
       this.randomFirstPlayer()
     },
 
     async showToast(message) {
-      this.toastMsg = await message;
+      this.toastMsg = message;
       this.isToast = !this.isToast;
     },
 
