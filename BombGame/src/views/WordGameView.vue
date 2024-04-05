@@ -72,11 +72,13 @@ import io from 'socket.io-client';
              color="red">set Not Ready
       </v-btn>
       <v-btn @click="this.startTimer();" class="ma-2" color="black">start timer</v-btn>
+      <v-btn @click="forceStopAndResetTimer();" class="ma-2" color="grey">stop timer</v-btn>
       {{ this.timer }}
+      current {{ this.isCurrentPlayersTurn }}
     </div>
 
     <div class="justify-end d-flex ma-5">
-      <v-btn v-if="this.isPlayerHost" :disabled="!this.isAllPlayersReady" @click="this.StartGame()" color="red">Start
+      <v-btn v-if="this.isPlayerHost" :disabled="!this.isAllPlayersReady" @click="this.startGame()" color="red">Start
         Game
       </v-btn>
     </div>
@@ -119,12 +121,20 @@ import io from 'socket.io-client';
     <!--    </v-row>-->
 
     <h1 class="d-flex justify-center">Letters:</h1>
-    <h2 class="d-flex justify-center">{{ this.letters }}</h2>
+    <div class="d-flex justify-center">
+      <v-progress-circular   color="red" class="d-flex justify-center"  :model-value="progressValue" :size="80" :width="7">
+        <h1 class="d-flex justify-center">{{ this.letters }}</h1>
+      </v-progress-circular>
+    </div>
+
+
 
     <div class="ma-15 d-flex justify-center">
-      <v-text-field :disabled="!this.isCurrentPlayersTurn" suffix="ENT" @keydown.enter.prevent="sendMessage"
+      <v-text-field v-model="guessedWord" :disabled="!this.isCurrentPlayersTurn" suffix="ENT"
+                    @keydown.enter.prevent="checkWord(guessedWord)"
                     hint="write a word" placeholder="write a word"></v-text-field>
-      <v-btn class="ma-2" color="green">Guess</v-btn>
+      <v-btn @click="checkWord(guessedWord)" class="ma-2" color="green">Guess</v-btn>
+      <v-btn @click="testConnection()">test connection</v-btn>
     </div>
 
 
@@ -167,7 +177,7 @@ export default {
     username: '',
     gameName: 'colors',
     message: '',
-    messages: [{username: "username", message: "new message"}],
+    messages: [],
     socket: null,
 
     // Toast
@@ -175,15 +185,19 @@ export default {
     isToast: false,
     //timer
     timer: 0, // Start the timer at 3 seconds
-    // Add timer interval variable to store setInterval reference
-    timerInterval: null
+    timerInterval: null,
+    progressValue: 100,
+    isTimerStopped: false,
 
   }),
   beforeUnmount() {
-    clearInterval(this.timerInterval);
+    // clearInterval(this.timerInterval);
   },
 
   async unmounted() {
+    if (this.isPlayerHost) {
+      clearInterval(this.timerInterval);
+    }
     try {
       // Clean up any resources or subscriptions before the component is destroyed
       await this.leaveRoom();
@@ -192,6 +206,7 @@ export default {
       console.error('Error during component destruction:', error);
     }
   },
+
   async mounted() {
     this.socket = io("http://localhost:3000"); // Connect to the Socket.IO server
 
@@ -204,6 +219,7 @@ export default {
     await this.joinSocketRoom(this.gameID, this.username)
     await this.updateSettings();
     this.checkHost();
+
     await this.getLetters();
 
 
@@ -222,17 +238,16 @@ export default {
     });
 
     this.socket.on('fetchFirstPlayer', async (firstPlayer) => {
-      this.startTimer();
-      await this.showToast("first player is: " + firstPlayer)
-      this.isCurrentPlayersTurn = firstPlayer === this.username;
+      await this.startTurn(firstPlayer);
     });
 
     this.socket.on('receiveLetters', (letters) => {
       this.letters = letters;
     });
 
-    this.socket.on('getNextPlayer', (mainPlayer) => {
-      console.log(mainPlayer);
+    this.socket.on('getNextPlayer', async (nextPlayer) => {
+      await this.startTurn(nextPlayer);
+
     });
 
     this.socket.on('getPlayerReady', async (player) => {
@@ -255,8 +270,31 @@ export default {
 
     this.socket.on('timerGetUpdate', (timerValue) => {
       this.timer = timerValue;
+      this.progressValue = (this.timer / this.roomSettings.timer.slice(0, -1)) * 100;
+      console.log("time update")
     });
 
+    this.socket.on('getResetTimer', () => {
+      console.log("i stopend time")
+    });
+
+    this.socket.on('isWordCorrect', (isWordCorrect) => {
+      if (isWordCorrect) {
+        this.socket.emit('timerUpdate', this.gameID, parseInt(this.roomSettings.timer.slice(0, -1))); //reset time back to 10
+        this.forceStopAndResetTimer();
+        if (this.isCurrentPlayersTurn) {
+        }
+        //this.socket.emit('resetTimer');
+
+        this.nextTurn();
+      } else {
+        this.showToast("incorrect word")
+      }
+    });
+
+    this.socket.on('getTestConnection', () => {
+      console.log("you have tested connection");
+    });
 
   },
   computed: {
@@ -305,12 +343,52 @@ export default {
       await this.socket.emit('joinRoom', roomName, username);
     },
 
-    async StartGame() {
+    randomFirstPlayer() {
+      this.socket.emit('pickRandomFirstPlayer', this.gameID, this.roomSettings.playersName);
+    },
+
+    async startGame() {
       this.randomFirstPlayer();
     },
 
-    randomFirstPlayer() {
-      this.socket.emit('pickRandomFirstPlayer', this.gameID, this.roomSettings.playersName);
+    async startTurn(player) {
+      console.log("i am checking turn")
+      await this.showToast("player turn : " + player);
+      this.isCurrentPlayersTurn = player === this.username;
+
+      if (this.isCurrentPlayersTurn) {
+        await this.getLetters()
+        this.startTimer();
+      }
+    },
+
+    async getLetters() {
+      this.socket.emit('getLetters', this.gameID, this.gameModeSettings.words);
+    },
+
+    startTimer() {
+      console.log("i am time God")
+      // Start a new timer interval that updates every second
+      this.timerInterval = setInterval(() => {
+
+
+        // Decrement timer by 1 second
+        console.log("i am time master:", this.timer)
+        if (this.timer > 0) {
+          this.timer--;
+          this.socket.emit('timerUpdate', this.gameID, this.timer);
+          this.progressValue = (this.timer / this.roomSettings.timer.slice(0, -1)) * 100;
+
+        } else {
+          // Timer has reached 0, stop the timer and handle timeout scenario
+          clearInterval(this.timerInterval); // Stop the timer interval
+          this.timer = parseInt(this.roomSettings.timer.slice(0, -1))
+          this.socket.emit('timerUpdate', this.gameID, this.timer); //reset time back to 10
+          this.nextTurn();
+
+        }
+      }, 1000);
+      this.isTimerStopped = !this.isTimerStopped
     },
 
     sendMessage() {
@@ -324,49 +402,12 @@ export default {
       this.message = "";
     },
 
-    startTimer() {
-      this.getLetters();
-      // Clear any existing timer interval
-      clearInterval(this.timerInterval);
-
-      // Start a new timer interval that updates every second
-      this.timerInterval = setInterval(() => {
-        // Decrement timer by 1 second
-        if (this.timer > 0) {
-          this.timer--;
-
-          // Emit the timer value to the server
-          this.socket.emit('timerUpdate', this.gameID, this.timer);
-        } else {
-          // Timer has reached 0, stop the timer and handle timeout scenario
-          clearInterval(this.timerInterval); // Stop the timer interval
-          this.timer = parseInt(this.roomSettings.timer.slice(0, -1))
-        }
-      }, 1000); // 1000 milliseconds = 1 second
-    },
 
     checkWord: async function (word) {
       if (word.includes(this.letters)) {
-        this.socket.emit('checkWord', this.gameID, this.timer);
-
+        this.socket.emit('checkCorrectWord', this.gameID, word, this.gameModeSettings.name);
       }
-
-
-    },
-
-    async fetchNewWordIfCorrect(guessedWord) {
       this.clearText();
-      if (await this.checkWord(guessedWord)) {
-        await this.setLetters();
-      } else {
-        console.log("wrong guess");
-        return false;
-      }
-    },
-
-
-    async getLetters() {
-      this.socket.emit('getLetters', this.gameID, this.gameModeSettings.words);
     },
 
     clearText() {
@@ -374,12 +415,9 @@ export default {
     },
 
     nextTurn() {
-      this.socket.emit('nextPlayer', this.roomName, this.mainPlayer);
-    },
-
-
-    async startGame() {
-      this.randomFirstPlayer()
+      if (this.isCurrentPlayersTurn) {
+        this.socket.emit('nextPlayer', this.gameID, this.username, this.roomSettings.playersName);
+      }
     },
 
     async showToast(message) {
@@ -389,14 +427,12 @@ export default {
 
     async leaveRoom() {
       try {
-        // Emit the socket event to disconnect the user from the room
         await this.socket.emit('disconnectUserFromRoom', this.gameID, this.username);
         await this.socket.emit('userLeft', this.username, this.gameID, "left");
         await this.socket.to(this.gameID).emit("playerLeftParty");
         console.log(`Successfully left room ${this.roomName}`);
       } catch (error) {
         console.error('Error leaving room:', error);
-        // Handle the error appropriately (e.g., display an error message to the user)
       }
     },
 
@@ -453,6 +489,18 @@ export default {
       rotation += 45;
       // Apply the new rotation
       arrowImage.style.transform = `rotate(${rotation}deg)`;
+    },
+
+
+    forceStopAndResetTimer() {
+      clearInterval(this.timerInterval);
+      //this.timer = -1;
+    },
+
+    testConnection()
+    {
+      console.log("send")
+      this.socket.emit('sendTest',this.gameID);
     }
   },
 
