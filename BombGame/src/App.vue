@@ -19,7 +19,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
     >
       <v-list>
         <v-list-item
-            prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
+            :prepend-avatar="this.userData.profilePicture"
             v-if="this.userData"
             :title=" this.userData.username "
             :subtitle="this.userData.mail"
@@ -29,21 +29,10 @@ import '@fortawesome/fontawesome-free/css/all.css'
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
-        <v-list-item @click="goToHome" title="" link="">
-          <!-- Home Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-home</v-icon>
-          </v-list-item-icon>
-        </v-list-item>
 
-        <v-divider></v-divider>
 
-        <v-list-item @click="goToEditProfile()" title="Edit Profile">
-          <!-- Edit Profile Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-account-edit</v-icon>
-          </v-list-item-icon>
-        </v-list-item>
+
+
 
         <v-list-item @click="goToHome">
           <!-- Home Icon -->
@@ -61,13 +50,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
           Login/Register
         </v-list-item>
 
-        <v-list-item @click="goToWordGame">
-          <!-- Word Game Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-spelling</v-icon>
-          </v-list-item-icon>
-          Word Game
-        </v-list-item>
+
 
         <v-list-item @click="goToCreateNewRoom">
           <!-- Word Game Icon -->
@@ -75,6 +58,13 @@ import '@fortawesome/fontawesome-free/css/all.css'
             <v-icon>mdi-spelling</v-icon>
           </v-list-item-icon>
           create new room
+        </v-list-item>
+        <v-list-item @click="goToCreateNewGamemode">
+          <!-- Word Game Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-spelling</v-icon>
+          </v-list-item-icon>
+          new gamemode
         </v-list-item>
 
 
@@ -90,6 +80,14 @@ import '@fortawesome/fontawesome-free/css/all.css'
           <v-btn color="red" @click="LogOut">Log Out</v-btn>
         </v-list-item>
       </v-list>
+
+      <v-list-item @click="goToEditProfile()" title="Edit Profile">
+        <!-- Edit Profile Icon -->
+        <v-list-item-icon>
+          <v-icon>mdi-account-edit</v-icon>
+        </v-list-item-icon>
+      </v-list-item>
+
 
     </v-navigation-drawer>
 
@@ -158,6 +156,9 @@ export default {
     goToCreateNewRoom() {
       router.push("/new-room")
     },
+    goToCreateNewGamemode() {
+      router.push("/create-gamemode")
+    },
     goToEditProfile() {
       router.push("/profile-edit")
     },
@@ -170,9 +171,9 @@ export default {
     goToRoomList() {
       router.push("/room-list")
     },
-    goToWordGame() {
-      router.push("/word-game")
-    },
+
+
+
 
     async fetchUserData() {
       return await user.getUserData();

@@ -1,6 +1,5 @@
 <script setup>
 import io from 'socket.io-client';
-import GamemodeCard from "@/components/GamemodeCard.vue";
 </script>
 
 <template>

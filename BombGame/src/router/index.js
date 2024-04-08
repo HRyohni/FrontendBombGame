@@ -46,6 +46,12 @@ const router = createRouter({
             component: () => import('../views/RoomListView.vue')
         },
 
+        {
+            path: '/create-gamemode',
+            name: 'createNewGamemode',
+            component: () => import('../views/CreateGamemodeView.vue')
+        },
+
     ]
 })
 
