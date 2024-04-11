@@ -51,6 +51,11 @@ const router = createRouter({
             name: 'createNewGamemode',
             component: () => import('../views/CreateGamemodeView.vue')
         },
+        {
+            path: '/shop',
+            name: 'shop',
+            component: () => import('../views/ShopView.vue')
+        },
 
     ]
 })

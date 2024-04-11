@@ -31,15 +31,19 @@ import '@fortawesome/fontawesome-free/css/all.css'
       <v-list density="compact" nav>
 
 
-
-
-
         <v-list-item @click="goToHome">
           <!-- Home Icon -->
           <v-list-item-icon>
             <v-icon>mdi-home</v-icon>
           </v-list-item-icon>
           Home
+        </v-list-item>
+        <v-list-item @click="goToShop">
+          <!-- Home Icon -->
+          <v-list-item-icon>
+            <v-icon>mdi-home</v-icon>
+          </v-list-item-icon>
+          Shop
         </v-list-item>
 
         <v-list-item @click="goToLoginRegister">
@@ -49,7 +53,6 @@ import '@fortawesome/fontawesome-free/css/all.css'
           </v-list-item-icon>
           Login/Register
         </v-list-item>
-
 
 
         <v-list-item @click="goToCreateNewRoom">
@@ -68,7 +71,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
         </v-list-item>
 
 
-   <v-list-item @click="goToRoomList">
+        <v-list-item @click="goToRoomList">
           <!-- Word Game Icon -->
           <v-list-item-icon>
             <v-icon>mdi-spelling</v-icon>
@@ -143,7 +146,7 @@ export default {
     userData: "unkown"
   }),
   async mounted() {
-     this.userData = await this.fetchUserData()
+    this.userData = await this.fetchUserData()
   },
 
   methods: {
@@ -171,8 +174,9 @@ export default {
     goToRoomList() {
       router.push("/room-list")
     },
-
-
+    goToShop() {
+      router.push("/shop")
+    },
 
 
     async fetchUserData() {
