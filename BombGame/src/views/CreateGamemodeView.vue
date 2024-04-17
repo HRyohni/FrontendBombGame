@@ -1,9 +1,11 @@
 <script setup>
 import io from 'socket.io-client';
+const props = defineProps({
+  gamename: String // Assuming gamename is a string
+});
 </script>
 
 <template>
-
   <v-container fluid="true">
     <v-row class="d-flex justify-center">
       <!--for desktop-->
@@ -114,6 +116,7 @@ import router from "@/router";
 import {user} from "../../handelers/UserHandeler";
 
 export default {
+
   data: () => ({
     username: "",
     words: "",
@@ -130,6 +133,7 @@ export default {
   }),
   async mounted() {
     this.username = await this.fetchUserData();
+    this.GamemodeName = this.gamename;
 
 
 

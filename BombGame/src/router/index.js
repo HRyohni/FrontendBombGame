@@ -1,5 +1,4 @@
 import {createRouter, createWebHistory} from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,16 +8,6 @@ const router = createRouter({
             name: 'LandingPage',
 
             component: () => import('../views/LandingPage.vue')
-        },
-        {
-            path: '/about',
-            name: 'about',
-            component: () => import('../views/AboutView.vue')
-        },
-        {
-            path: '/profile-edit',
-            name: 'profileEdit',
-            component: () => import('../views/ProfileEditView.vue')
         },
 
         {
@@ -50,6 +39,12 @@ const router = createRouter({
             path: '/create-gamemode',
             name: 'createNewGamemode',
             component: () => import('../views/CreateGamemodeView.vue')
+        },
+        {
+            path: '/create-gamemode/:gamename',
+            name: 'createNewGamemodeWithName',
+            component: () => import('../views/CreateGamemodeView.vue'),
+            props: true // Pass route params as props to the component
         },
         {
             path: '/shop',

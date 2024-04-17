@@ -1,192 +1,172 @@
-<script setup>
-import {RouterLink, RouterView} from 'vue-router'
-import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
-import {faHouse} from "@fortawesome/free-solid-svg-icons/faHouse";
-import {faArrows} from "@fortawesome/free-solid-svg-icons/faArrows";
-import '@fortawesome/fontawesome-free/css/all.css'
-</script>
-
 <template>
   <v-layout>
-
-    <!--     For higher resolution and smaller -->
-    <v-navigation-drawer
-        elevation="6"
-        expand-on-hover
-        color="#2F313D"
-        :rail="true"
-        class="d-inline"
-    >
+    <!-- For higher resolution and smaller -->
+    <v-navigation-drawer elevation="6" expand-on-hover color="#2F313D" :rail="true" class="d-inline">
       <v-list>
-        <v-list-item
-            :prepend-avatar="this.userData.profilePicture"
-            v-if="this.userData"
-            :title=" this.userData.username "
-            :subtitle="this.userData.mail"
-        ></v-list-item>
+        <v-list-item :prepend-avatar="userData.profilePicture" v-if="userData" :title="userData.username"
+                     :subtitle="userData.mail"></v-list-item>
       </v-list>
-
       <v-divider></v-divider>
-
       <v-list density="compact" nav>
-
-
-        <v-list-item @click="goToHome">
-          <!-- Home Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-home</v-icon>
+        <!-- Navigation Items with Icons -->
+        <v-list-item @click="goToHome" class="menu-item">
+          <v-list-item-icon class="d-flex align-center">
+            <FontAwesomeIcon :icon="homeIcon"/>
+            <h4 class="ml-2">Home</h4>
           </v-list-item-icon>
-          Home
         </v-list-item>
-        <v-list-item @click="goToShop">
-          <!-- Home Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-home</v-icon>
+        <v-list-item @click="goToShop" class="menu-item">
+          <v-list-item-icon class="d-flex align-center">
+            <FontAwesomeIcon :icon="shopIcon"/>
+            <h4 class="ml-2">Shop</h4>
           </v-list-item-icon>
-          Shop
         </v-list-item>
 
-        <v-list-item @click="goToLoginRegister">
-          <!-- Login/Register Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-account-multiple-plus</v-icon>
+        <v-list-item @click="goToCreateNewRoom" class="menu-item">
+          <v-list-item-icon class="d-flex align-center">
+            <FontAwesomeIcon :icon="createRoomIcon"/>
+            <h4 class="ml-2">New Room</h4>
           </v-list-item-icon>
-          Login/Register
         </v-list-item>
-
-
-        <v-list-item @click="goToCreateNewRoom">
-          <!-- Word Game Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-spelling</v-icon>
+        <v-list-item @click="goToCreateNewGamemode" class="menu-item">
+          <v-list-item-icon class="d-flex align-center">
+            <FontAwesomeIcon :icon="createGamemodeIcon"/>
+            <h4 class="ml-2">New Gamemode</h4>
           </v-list-item-icon>
-          create new room
         </v-list-item>
-        <v-list-item @click="goToCreateNewGamemode">
-          <!-- Word Game Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-spelling</v-icon>
+        <v-list-item @click="goToRoomList" class="menu-item">
+          <v-list-item-icon class="d-flex align-center">
+            <FontAwesomeIcon :icon="roomListIcon"/>
+            <h4 class="ml-2">RoomList</h4>
           </v-list-item-icon>
-          new gamemode
         </v-list-item>
-
-
-        <v-list-item @click="goToRoomList">
-          <!-- Word Game Icon -->
-          <v-list-item-icon>
-            <v-icon>mdi-spelling</v-icon>
+        <v-list-item @click="goToLoginRegister" class="menu-item">
+          <v-list-item-icon class="d-flex align-center">
+            <FontAwesomeIcon :icon="loginRegisterIcon"/>
+            <h4 class="ml-3">Login/Register</h4>
           </v-list-item-icon>
-          RoomList
         </v-list-item>
 
-        <v-list-item v-if="this.userData !== null">
-          <v-btn color="red" @click="LogOut">Log Out</v-btn>
+        <v-list-item @click="LogOut" class="menu-item">
+          <v-list-item-icon class="d-flex align-center">
+            <FontAwesomeIcon :icon="logOut"/>
+            <h4 class="ml-3">Sign Out</h4>
+          </v-list-item-icon>
         </v-list-item>
+
+
       </v-list>
-
-      <v-list-item @click="goToEditProfile()" title="Edit Profile">
-        <!-- Edit Profile Icon -->
-        <v-list-item-icon>
-          <v-icon>mdi-account-edit</v-icon>
-        </v-list-item-icon>
-      </v-list-item>
-
+      <!-- Edit Profile -->
 
     </v-navigation-drawer>
-
     <v-main>
       <RouterView class="d-inline"/>
     </v-main>
-
-
-    <!--     For mobile and smaller -->
-
-    <v-bottom-navigation class="d-lg-none" :elevation="10" mode="shift">
-      <v-btn value="recent">
-        <h1>R</h1>
-        <span>Recent</span>
+    <!-- For mobile and smaller -->
+    <v-bottom-navigation color="red" bg-color="grey"  class="d-lg-none" :elevation="10" mode="shift">
+      <v-btn @click="goToHome">
+      <v-icon>{{ createRoomIcon }}</v-icon>
+        <h4 class="ml-2">Home</h4>
       </v-btn>
-
-      <v-btn value="favorites">
-        <h1>H</h1>
-
-        <span>Favorites</span>
+      <v-btn @click="goToShop">
+        <FontAwesomeIcon icon="shopping-cart"/>
+        <h4 class="ml-2">Shop</h4>
       </v-btn>
-
-      <v-btn value="nearby">
-        <h1>N</h1>
-
-        <span>Nearby</span>
+      <v-btn @click="goToLoginRegister">
+        <FontAwesomeIcon icon="user"/>
+        <h4 class="ml-2">Login/Register</h4>
+      </v-btn>
+      <v-btn @click="goToCreateNewRoom">
+        <FontAwesomeIcon icon="plus-square"/>
+        <h4 class="ml-2">Create New Room</h4>
+      </v-btn>
+      <v-btn @click="goToCreateNewGamemode">
+        <FontAwesomeIcon icon="gamepad"/>
+        <h4 class="ml-2">New Gamemode</h4>
+      </v-btn>
+      <v-btn @click="goToRoomList">
+        <FontAwesomeIcon icon="list"/>
+        <h4 class="ml-2">RoomList</h4>
+      </v-btn>
+      <v-btn @click="LogOut" color="red">
+        <FontAwesomeIcon icon="sign-out-alt"/>
+        <h4 class="ml-2">Log Out</h4>
       </v-btn>
     </v-bottom-navigation>
   </v-layout>
-
 </template>
 
-
 <script>
-
 import router from "@/router";
-import {faHome} from "@fortawesome/free-solid-svg-icons";
-import {mapGetters} from "vuex";
+import {
+  faHome,
+  faShoppingCart,
+  faUser,
+  faSpellCheck,
+  faSignOutAlt,
+  faEdit,
+  faSignOut,
+  faPlusSquare, faGamepad, faList
+} from '@fortawesome/free-solid-svg-icons';
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome';
 import {user} from "../handelers/UserHandeler"
+import io from "socket.io-client";
 
 export default {
   name: "App",
-
   components: {
-    //components
+    FontAwesomeIcon
   },
-  props:
-      {},
-
-
   data: () => ({
     homeIcon: faHome,
-    userData: "unkown"
+    shopIcon: faShoppingCart,
+    loginRegisterIcon: faUser,
+    createRoomIcon: faPlusSquare,
+    createGamemodeIcon: faGamepad,
+    roomListIcon: faList,
+    editProfileIcon: faEdit,
+    userData: null,
+    socket: null,
   }),
   async mounted() {
-    this.userData = await this.fetchUserData()
+    this.socket = io("http://localhost:3000");
+    this.userData = await this.fetchUserData();
+
+    this.socket.on('changeUserData', () => {
+      console.log("data changed");
+      this.userData = this.fetchUserData();
+    });
   },
-
   methods: {
-
     LogOut() {
       user.logOutUser();
       user.changeUrlOnLogin();
     },
-
     goToCreateNewRoom() {
-      router.push("/new-room")
+      router.push("/new-room");
     },
     goToCreateNewGamemode() {
-      router.push("/create-gamemode")
+      router.push("/create-gamemode");
     },
     goToEditProfile() {
-      router.push("/profile-edit")
+      router.push("/profile-edit");
     },
     goToHome() {
-      router.push("/")
+      router.push("/");
     },
     goToLoginRegister() {
-      router.push("/login-register")
+      router.push("/login-register");
     },
     goToRoomList() {
-      router.push("/room-list")
+      router.push("/room-list");
     },
     goToShop() {
-      router.push("/shop")
+      router.push("/shop");
     },
-
-
     async fetchUserData() {
       return await user.getUserData();
     },
-
   },
 };
 </script>
 
-<style scoped>
-
-</style>

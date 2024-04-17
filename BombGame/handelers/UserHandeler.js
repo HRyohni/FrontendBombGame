@@ -86,11 +86,30 @@ async function updateUserData(newUserData) {
     }
 }
 
+async function updateProfilePicture(imageData) {
+    try {
+        const response = await axios.post("/api/updateProfilePicture", { imageData }); // Adjust the endpoint accordingly
+        const updatedUserData = response.data;
+
+        // Update Vuex store
+        await store.dispatch('updateUser', updatedUserData);
+
+        // Store updated user data in local storage
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(updatedUserData));
+
+        return updatedUserData;
+    } catch (error) {
+        console.error('Failed to update profile picture:', error);
+        throw error;
+    }
+}
+
 
 export const user = {
     changeUrlOnLogin,
     getUserData,
     logOutUser,
     updateUserData,
+    updateProfilePicture,
 
 };

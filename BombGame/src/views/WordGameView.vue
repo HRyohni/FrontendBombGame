@@ -20,12 +20,12 @@ import ConfettiExplosion from "vue-confetti-explosion";
     </template>
   </v-snackbar>
 
-
-  <v-card v-if="this.overlayOn" class="pa-4">
-    <confetti-explosion></confetti-explosion>
-    <v-card-title class="ma-4 d-flex justify-center">Winner</v-card-title>
-    <h1 class="d-flex justify-center"><b>{{ this.winnersUsername + '  ' }}</b>is Winner</h1>
+  <v-card :color="this.playersData.backgroundColor" v-if="this.overlayOn" class="pa-4">
+    <confetti-explosion :colors="[this.playersData.confettiColor]" ></confetti-explosion>
+    <h1 class="d-flex justify-center"><b>{{ this.winnersUsername + " " }}</b></h1>
+    <h1 class="d-flex justify-center">Wins</h1>
     <h1 style="font-size: 60px" class="d-flex justify-center">{{ this.getPlayerScore(this.winnersUsername) }}</h1>
+    <h4 class="d-flex justify-center">score</h4>
   </v-card>
 
 
@@ -79,9 +79,16 @@ import ConfettiExplosion from "vue-confetti-explosion";
             <ConfettiExplosion :particleCount="20" :force="0.01"/>
             <v-avatar class="d-flex justify-center"
                       :class="{ 'outlineTurn': this.currentPlayerName === user }"
-                      image="https://cdn.discordapp.com/avatars/718124223347818497/1d03ebf4cf9d399835133ba85edbbe7a.webp?size=80"
-                      size="70">
+                      :size="70">
+              <template v-if="true">
+                <v-img :src="this.setProfilePicture(user)" width="70" height="70"></v-img>
+              </template>
+              <template v-else>
+
+                <v-progress-circular indeterminate color="primary"></v-progress-circular>
+              </template>
             </v-avatar>
+
 
           </div>
 
@@ -189,6 +196,7 @@ export default {
     progressValue: 100,
     isTimerStopped: false,
     isGameInProgress: false,
+    playerProfilePictures: [],
 
   }),
   beforeUnmount() {
@@ -202,7 +210,6 @@ export default {
     try {
       // Clean up any resources or subscriptions before the component is destroyed
       await this.leaveRoom();
-      console.log('Component is about to be destroyed');
     } catch (error) {
       console.error('Error during component destruction:', error);
     }
@@ -214,15 +221,25 @@ export default {
     this.playersData = await this.fetchUserData();
     this.username = this.playersData.username;
     this.roomSettings = await this.fetchRoomSettings(this.gameID);
+
     this.playersHp = this.roomSettings.lives;
     this.serverTimer = parseInt(this.roomSettings.timer.slice(0, -1))
     this.timer = this.serverTimer;
     this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
 
+
+
     await this.updateSettings();
     await this.joinSocketRoom(this.gameID, this.username)
     this.allPlayers = this.setAllPlayers(this.roomSettings, this.playersHp);
     this.checkHost();
+
+
+    this.roomSettings.playersName.forEach(async (player) => {
+      const profilePicture = await this.getUserProfilePicture(player);
+      this.playerProfilePictures.push({username: player, profilePicture: profilePicture}) ;
+    });
+
 
 
     this.socket.on('newMessage', async (username, message) => {
@@ -268,6 +285,11 @@ export default {
 
     this.socket.on('newPlayerJoined', async (player) => {
       this.roomSettings = await this.fetchRoomSettings(this.gameID);
+      this.playerProfilePictures = []
+      this.roomSettings.playersName.forEach(async (player) => {
+        const profilePicture = await this.getUserProfilePicture(player);
+        this.playerProfilePictures.push({username: player, profilePicture: profilePicture}) ;
+      });
     });
 
     this.socket.on('playerLeftParty', async () => {
@@ -280,10 +302,10 @@ export default {
     });
 
     this.socket.on('getResetTimer', () => {
-      console.log("i stoped time")
     });
 
     this.socket.on('fetchPlayerWin', (winnersName) => {
+      this.savePoints(this.username);
       this.isGameInProgress = false;
       this.winnersUsername = winnersName;
       this.overlayOn = true;
@@ -294,7 +316,6 @@ export default {
     });
 
     this.socket.on('fetchScore', (username, points) => {
-      console.log("recived points", username)
       this.getPoints(username, points)
     });
 
@@ -397,13 +418,11 @@ export default {
     },
 
     startTimer() {
-      console.log("i am time God")
-      // Start a new timer interval that updates every second
       this.timerInterval = setInterval(() => {
 
 
         // Decrement timer by 1 second
-        console.log("i am time master:", this.timer)
+        console.log("i start timer", this.timer)
         if (this.timer > 0) {
           this.timer--;
           this.socket.emit('timerUpdate', this.gameID, this.timer);
@@ -442,7 +461,6 @@ export default {
     async playerDead(playersName) {
       await this.socket.emit('userLeft', this.username, this.gameID, "is Dead");
       if (this.checkLastManStanding()) {
-        console.log("i am last man standing and i won")
         await this.socket.emit('userLeft', this.username, this.gameID, " is winner");
         await this.socket.emit('onPlayerWin', this.gameID, this.username);
 
@@ -518,16 +536,12 @@ export default {
     },
 
     async getPlayerReady(player) {
-      console.log("user: ", player, " is ready");
       this.playersReady.push(player);
-      console.log("Players Ready:", this.playersReady); // Verify that playersReady is updated
     },
 
     async setPlayerNotReady(player) {
 
-      console.log("user: ", player, " is NOT ready");
       this.playersReady = this.playersReady.filter(p => p !== player);
-      console.log("Players not Ready:", this.playersReady); // Verify that playersReady is updated
     },
 
     async checkIfAllPlayersReady() {
@@ -562,7 +576,6 @@ export default {
     },
 
     testConnection() {
-      console.log("send")
       this.socket.emit('sendTest', this.gameID);
     },
     getPlayerLife(username) {
@@ -583,8 +596,42 @@ export default {
         return true;
       }
       return false;
+    },
+
+    savePoints(username) {
+      const playerIndex = this.allPlayers.findIndex(player => player.username === username);
+      if (playerIndex !== -1) {
+        const player = this.allPlayers[playerIndex];
+        player.score = this.getPlayerScore(username)
+        this.socket.emit('savePoints', player);
+        return true;
+      }
+      return false;
+    },
+
+    async getUserProfilePicture(username) {
+      try {
+        const response = await axios.get(`/api/user/profilePicture/${username}`);
+
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching profile picture:', error);
+        return null;
+      }
+    },
+
+    setProfilePicture(user)
+    {
+
+      try {
+        return this.playerProfilePictures.find(item => item.username === user).profilePicture;
+      }
+      catch (e)
+      {
+      }
     }
-  }
+  },
+
 
 
 }

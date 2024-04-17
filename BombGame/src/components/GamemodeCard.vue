@@ -1,20 +1,26 @@
 <script setup>
+import router from "@/router";
 
+const props = defineProps({
+  gameModeName: String,
+  gameModeDescription: String,
+  gameModeAuthor: String
+});
 </script>
 
 <template>
   <v-container class="d-inline">
 
-    <v-card style="min-width: 200px" class="d-flex flex-wrap ma-1" image="./src/assets/bomb_icon.png" elevation="4"
+    <v-card style="min-width: 200px" image="./src/assets/bomb_icon.png" elevation="4"
             color="grey-darken-4" height="250"
             width="300">
-      <v-card-title> GameModeName</v-card-title>
-      <v-card-subtitle>gameModeAuthor</v-card-subtitle>
-      <v-card-text> gamemodeDescription</v-card-text>
+      <h1 class="ma-2">{{ props.gameModeName }}</h1>
+      <v-card-text>{{ props.gameModeDescription }}</v-card-text>
+      <v-card-subtitle class="d-flex justify-end">{{ props.gameModeAuthor }}</v-card-subtitle>
 
       <v-spacer></v-spacer>
       <v-card-actions>
-        <v-btn    color="primary" elevation="3"  >Play</v-btn>
+        <v-btn @click="router.push('/create-gamemode/'+props.gameModeName)" variant="outlined" color="primary" elevation="3">Play</v-btn>
       </v-card-actions>
     </v-card>
   </v-container>
