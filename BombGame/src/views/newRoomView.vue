@@ -1,5 +1,8 @@
 <script setup>
 import io from 'socket.io-client';
+const props = defineProps({
+  gamename: String // Assuming gamename is a string
+});
 </script>
 
 <template>
@@ -8,59 +11,44 @@ import io from 'socket.io-client';
     <v-row class="d-flex justify-center">
       <!--for desktop-->
       <v-col cols="12" class="d-lg-none">
-        <v-card width="100%" elevation="4" class="pa-5">
+        <v-card color="#53566B" width="100%" elevation="4" class="pa-5">
           <div class="pa-4 d-flex justify-center">
-            <h3>CREATE NEW ROOM</h3>
+            <h3>CREATE ROOM</h3>
           </div>
           <hr>
 
           <div class="pa-3">
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="Room Name"
+              <v-expansion-panel color="#21232B" title="Room Name"
                                  text="Name your room so other players can find it."></v-expansion-panel>
             </v-expansion-panels>
-            <v-text-field variant="outlined" hint="write" v-model="this.roomName"></v-text-field>
+            <v-text-field variant="outlined" hint="write" v-model="this.game"></v-text-field>
 
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="Game Modes" text="Pick Game Mode to play."></v-expansion-panel>
+              <v-expansion-panel color="#21232B" title="Game Modes" text="Pick Game Mode to play."></v-expansion-panel>
             </v-expansion-panels>
-            <v-text-field variant="outlined" hint="what gamemode you want to play" v-model="this.gameModeName"></v-text-field>
+            <v-text-field :disabled="true" v-model="this.gamename" variant="outlined" hint="what gamemode you want to play" ></v-text-field>
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="lives" text="how many lives will each player have. "></v-expansion-panel>
+              <v-expansion-panel color="#21232B" title="lives" text="how many lives will each player have. "></v-expansion-panel>
             </v-expansion-panels>
 
             <v-slider class="mt-10" thumb-label elevation="4" label="lifes" :min="1" :max="10" :step="1"
                       v-model="this.lives"></v-slider>
 
 
-            <v-expansion-panels class="mb-3" >
-              <v-expansion-panel color="primary" title="Clock" text="set timer for whole game"></v-expansion-panel>
-              <template >
-                x
-              </template>
 
-            </v-expansion-panels>
-
-            <v-combobox
-                variant="outlined"
-                style="width: auto"
-                class="ma-2"
-                :items="['no timer','3s','5s','10s']"
-                label="Clock"
-                v-model="this.timer"
-            ></v-combobox>
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="Timer" text="set timer for players turn"></v-expansion-panel>
+              <v-expansion-panel color="#21232B" title="Timer" text="set timer for players turn"></v-expansion-panel>
             </v-expansion-panels>
             <v-combobox
                 variant="outlined"
                 style="width: auto"
                 class="ma-2"
-                :items="['no timer','3s','5s','10s']"
+                :items="['3s','4s','5s','6s','7s','10s']"
                 label="Time"
                 v-model="this.timePerPlayer"
             ></v-combobox>
@@ -68,7 +56,7 @@ import io from 'socket.io-client';
 
           </div>
 
-          <div class="d-flex justify-center">
+          <div class="d-flex justify-space-between">
             <v-btn @click="this.CancelCreatingRoom()" class="ma-2" color="red">Cancel</v-btn>
             <v-btn class="ma-2" color="blue" @click="this.createRoom">Create</v-btn>
           </div>
@@ -77,61 +65,50 @@ import io from 'socket.io-client';
 
       <!--for phone-->
       <v-col cols="12" lg="49" xl="4" class="d-none d-lg-flex justify-center">
-        <v-card width="100%" elevation="4" class="pa-5">
+        <v-card color="#53566B" width="100%" elevation="4" class="pa-5">
           <div class="pa-4 d-flex justify-center">
-            <h3>CREATE NEW ROOM</h3>
+            <h3>CREATE ROOM</h3>
           </div>
           <hr>
 
           <div class="pa-3">
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="Room Name"
+              <v-expansion-panel color="#21232B" title="Room Name"
                                  text="Name your room so other players can find it."></v-expansion-panel>
             </v-expansion-panels>
             <v-text-field  variant="outlined" hint="write" v-model="this.roomName"></v-text-field>
 
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary"  title="Game Modes" text="Pick Game Mode to play."></v-expansion-panel>
+              <v-expansion-panel color="#21232B"  title="Game Modes" text="Game mode you picked to play."></v-expansion-panel>
             </v-expansion-panels>
-            <v-text-field  variant="outlined" hint="what gamemode you want to play" v-model="this.gameModeName"></v-text-field>
+            <v-text-field :disabled="true" v-model="this.gamename" variant="outlined"  ></v-text-field>
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="lives" text="how many lives will each player have. "></v-expansion-panel>
+              <v-expansion-panel color="#21232B" title="lives" text="how many lives will each player have. "></v-expansion-panel>
             </v-expansion-panels>
 
             <v-slider class="mt-10" thumb-label elevation="4" label="lifes" :min="1" :max="10" :step="1"
                       v-model="this.lives"></v-slider>
 
 
-            <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="Clock" text="set timer for whole game"></v-expansion-panel>
-            </v-expansion-panels>
-            <v-combobox
-                variant="outlined"
 
-                style="width: auto"
-                class="ma-2"
-                :items="['no timer','3s','5s','10s']"
-                label="Clock"
-                v-model="this.timer"
-            ></v-combobox>
 
             <v-expansion-panels class="mb-3">
-              <v-expansion-panel color="primary" title="Timer" text="set timer for players turn"></v-expansion-panel>
+              <v-expansion-panel color="#21232B" title="Timer" text="set timer for players turn"></v-expansion-panel>
             </v-expansion-panels>
             <v-combobox
                 variant="outlined"
                 style="width: auto"
                 class="ma-2"
-                :items="['no timer','3s','5s','10s']"
+                :items="['3s','4s','5s','6s','7s','10s']"
                 label="Time"
                 v-model="this.timePerPlayer"
             ></v-combobox>
           </div>
 
-          <div class="d-flex justify-center">
+          <div class="d-flex justify-space-between">
             <v-btn @click="this.CancelCreatingRoom" class="ma-2" color="red">Cancel</v-btn>
             <v-btn @click="this.createRoom" class="ma-2" color="blue">Create</v-btn>
           </div>
@@ -161,9 +138,11 @@ import io from 'socket.io-client';
 <script>
 import axios from "axios";
 import router from "@/router";
+import {user} from "../../handelers/UserHandeler";
 
 export default {
   data: () => ({
+    username: "",
     roomName: "",
     gameModeName: "colors",
     lives: "",
@@ -175,6 +154,7 @@ export default {
   }),
   async mounted() {
 
+    this.username = await user.getUserData();
 
   },
   methods: {
@@ -182,8 +162,13 @@ export default {
 
     createRoom() {
       if (this.checkInput())
-        if (this.checkIfNameAlreadyUsed(this.roomName))
-          this.sendData()
+        if (!this.checkIfNameAlreadyUsed(this.roomName))
+        {
+
+          this.sendData();
+
+        }
+
         else {
           this.showSnackbar("Room name already exists")
         }
@@ -195,20 +180,22 @@ export default {
     sendData() {
       try {
         axios
-            .post("/api/room/create-room", {
+            .post("https://backendbombgane.onrender.com/api/room/create-room", {
+              host: this.username.username,
               roomName: this.roomName,
               gameModeName: this.gameModeName,
               lives: this.lives,
               timer: this.timer,
               timePerPlayer: this.timePerPlayer
             }).then((response) => {
-          console.log(response);
+
         }, (error) => {
           throw error || new Error(`Request failed`);
         })
       } catch (error) {
         console.error(error);
       }
+      router.push("/room-list");
     },
 
     checkInput() {

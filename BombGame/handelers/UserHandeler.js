@@ -31,7 +31,7 @@ async function _removePasswordFromUserData(userData) {
 
 async function _fetchUserFromDB() {
     try {
-        const response = await axios.get("/api/fetchUser"); // Replace "/api/getUserData" with your actual API endpoint
+        const response = await axios.get("https://backendbombgane.onrender.com/api/fetchUser"); // Replace "/api/getUserData" with your actual API endpoint
         const userData = response.data;
 
         if (userData) {
@@ -58,8 +58,7 @@ async function  _checkUserAuth() {
 }
 
 async function getUserData() {
-    const userDataString = localStorage.getItem(USER_DATA_KEY);
-    return userDataString ? JSON.parse(userDataString) : null;
+ return store.getters.getUser
 }
 
 
@@ -80,7 +79,7 @@ async function updateUserData(newUserData) {
         await store.dispatch('updateUser', newUserData);
 
         // Store user data in local storage
-        localStorage.setItem(USER_DATA_KEY, JSON.stringify(newUserData));
+        //localStorage.setItem(USER_DATA_KEY, JSON.stringify(newUserData));
     } catch (error) {
         console.error('Failed to update user data:', error);
     }
@@ -88,7 +87,7 @@ async function updateUserData(newUserData) {
 
 async function updateProfilePicture(imageData) {
     try {
-        const response = await axios.post("/api/updateProfilePicture", { imageData }); // Adjust the endpoint accordingly
+        const response = await axios.post("https://backendbombgane.onrender.com/api/updateProfilePicture", { imageData }); // Adjust the endpoint accordingly
         const updatedUserData = response.data;
 
         // Update Vuex store

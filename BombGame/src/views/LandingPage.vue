@@ -20,10 +20,7 @@ import {gameModeMethods} from "../../handelers/gameModeHandeler";
             cycle
             hide-delimiter-background
         >
-          <v-carousel-item
-              v-for="(slide, i) in gamemodes"
-              :key="i"
-          >
+          <v-carousel-item v-for="(slide, i) in gamemodes" :key="i">
 
             <v-sheet
                 v-if="slide.Author === 'yohni'"
@@ -65,10 +62,10 @@ import {gameModeMethods} from "../../handelers/gameModeHandeler";
 
 
     <v-card elevation="3" class="pa-2" color="#2F313D">
-      <v-row style="height: 300px" class="overflow-x-auto">
+      <v-row style="height: 500px" class="overflow-x-auto">
         <v-col class="d-inline" v-for="gamemode in gamemodes">
           <gamemode-card
-              v-if="gamemode.Author === 'yohni'"
+              v-if="gamemode.Author !== 'yohni'"
               :game-mode-author="gamemode.Author"
               :game-mode-description="gamemode.description"
               :game-mode-name="gamemode.name"
@@ -98,18 +95,22 @@ export default {
       'warning',
       'pink darken-2',
       'red lighten-1',
-      'deep-purple accent-4',
+      'indigo',
+      'warning',
+      'pink darken-2',
+      'red lighten-1',
+      'indigo',
+      'warning',
+      'pink darken-2',
+      'red lighten-1',
+
     ],
     slides: [
-      'First',
-      'Second',
-      'Third',
-      'Fourth',
-      'Fifth',
+
     ],
   }),
   async mounted() {
-    await user.changeUrlOnLogin();
+
     this.userData = await user.getUserData();
     await this.fetchAllGamemodes();
 
@@ -135,7 +136,7 @@ export default {
 
     startGame(gamemodeName)
     {
-      router.push("/create-gamemode/"+gamemodeName)
+      router.push("/new-room/"+gamemodeName)
     }
 
   },

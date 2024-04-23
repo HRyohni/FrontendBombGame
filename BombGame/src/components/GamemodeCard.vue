@@ -20,7 +20,7 @@ const props = defineProps({
 
       <v-spacer></v-spacer>
       <v-card-actions>
-        <v-btn @click="router.push('/create-gamemode/'+props.gameModeName)" variant="outlined" color="primary" elevation="3">Play</v-btn>
+        <v-btn @click="router.push('/new-room/'+props.gameModeName)" variant="outlined" color="primary" elevation="3">Play</v-btn>
       </v-card-actions>
     </v-card>
   </v-container>

@@ -1,7 +1,6 @@
 <script setup>
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import {faHouse} from "@fortawesome/free-solid-svg-icons/faHouse";
-
 </script>
 
 <template>
@@ -59,32 +58,32 @@ import {user} from '../../handelers/UserHandeler'
 
 export default {
   methods: {
-    onLogin() {
+    async onLogin() {
       try {
-        axios
-            .post("/api/login", {username: this.username, password: this.password})
-            .then(async (response) => {
-              if (response.data.result) {
-                await user.updateUserData(response.data.result);
-                await router.push("/");
-              } else {
+        const response = await axios.post("https://backendbombgane.onrender.com/api/login", {
+          username: this.username,
+          password: this.password
+        });
+        const token = response.data.token; // Assuming your API returns a JWT token
 
-                this.error = response.data.error;
-              }
-            }, (error) => {
-              throw error || new Error(`Request failed`);
-            })
+        localStorage.setItem('token', token); // Store the token securely
+
+        // Update user data in Vuex store
+        await user.updateUserData(response.data.user);
+
+        await router.push("/");
       } catch (error) {
-        // Consider implementing your own error handling logic here
+        // Handle login errors
         console.error(error);
       }
     },
 
 
+
     onRegister() {
       try {
         axios
-            .post("/api/register", {
+            .post("https://backendbombgane.onrender.com/api/register", {
               username: this.username,
               mail: this.mail,
               password: this.password,
@@ -113,7 +112,7 @@ export default {
     onDebug() {
       try {
         axios
-            .post("/api/add-gamemode", {name: "test", mail: "newmail"})
+            .post("https://backendbombgane.onrender.com/api/add-gamemode", {name: "test", mail: "newmail"})
             .then((response) => {
               console.log(response);
 

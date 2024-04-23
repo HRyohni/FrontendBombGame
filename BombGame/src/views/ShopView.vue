@@ -8,7 +8,7 @@ import ConfettiExplosion from "vue-confetti-explosion";
     <v-col>
 
 
-      <v-card class="pa-2">
+      <v-card color="#53566B" class="pa-2">
         <div class="d-flex align-center justify-end ">
           <div class="d-flex">
             <h1 class="mr-1">{{ this.money }} </h1>
@@ -30,25 +30,25 @@ import ConfettiExplosion from "vue-confetti-explosion";
 
 
         </v-tabs>
-        <v-card  color="#065690" elevation="0" class="ma-10 pa-10">
+        <v-card width="auto" color="#065690" elevation="3" class=" pa-3">
 
           <v-window v-model="tab">
             <v-window-item value="one">
-              <v-row class="d-flex justify-center">
+              <v-row align="center" no-gutters="" class="d-flex justify-center">
 
                 <div v-for="profile in this.profilePics">
-                  <v-col cols="50">
-                    <v-card elevation="12" width="300px" color="#0475c2">
+                  <v-col>
+                    <v-card elevation="12" color="#0475c2">
                       <div class="pa-2  d-flex justify-center">
                         <v-img
                             :src="profile"></v-img>
                       </div>
                       <v-card color="primary" class="justify-center d-flex pa-3">
-                        <v-btn class="h-auto w-100 pa-4" color="red">
+                        <v-btn @click="buyBackground(profile)" class="h-auto w-100 pa-4" color="red">
                           <h1 class="mr-2">1000</h1>
                           <v-img
-                              @click="buyBackground(profile)"
-                              class="w-75" src="../src/assets/coin.png"></v-img>
+
+                              class="w-25" src="../src/assets/coin.png"></v-img>
                         </v-btn>
 
                       </v-card>
@@ -64,36 +64,47 @@ import ConfettiExplosion from "vue-confetti-explosion";
               <v-row class="d-flex justify-center">
 
 
-                <v-card color="white" style="" elevation="12" class="ma-2 pa-3" width="50%">
+                <v-card color="#21232B" style="" elevation="12" class="ma-2 pa-3" width="100%">
+                  <v-card :color="this.backgroundColor" width="100%">
+
+                    <h1 class="d-flex justify-center">{{ this.userData.username }}</h1>
+                    <h2 class="justify-center d-flex">Wins</h2>
+                    <div class="d-flex justify-space-between">
+                      <ConfettiExplosion :colors="[confettiColor]" v-if="visible"/>
+                      <ConfettiExplosion :colors="[confettiColor]" v-if="visible"/>
+                    </div>
+                    <v-btn class="ma-2" @click="explode" :color="confettiColor">Explode</v-btn>
+                  </v-card>
                   <v-row>
-                    <v-col class="pt-4 pl-4 pr-4 pb-16">
-                      <v-card min-width="200px" :color="this.backgroundColor" width="100%" height="100%">
-                        <h1 class="d-flex justify-center">{{ this.userData.username }}</h1>
-                        <h2 class="justify-center d-flex">Wins</h2>
-                        <ConfettiExplosion :colors="[confettiColor]" v-if="visible"/>
-                      </v-card>
-                      <v-btn class="mt-2" @click="explode" :color="confettiColor">Explode</v-btn>
 
-
-                    </v-col>
                     <v-col>
-
                       <v-card-title class="d-flex justify-space-evenly">
-                        <h3>Confetti Color</h3>
-                        <h3>background Color</h3>
+                        <div class="text-h3">Confetti Color</div>
                       </v-card-title>
                       <div class="d-flex justify-center">
-                        <v-color-picker class="ma-2" elevation="10" v-model="this.confettiColor"></v-color-picker>
-                        <v-color-picker class="ma-2" elevation="10" v-model="this.backgroundColor"></v-color-picker>
+                        <v-color-picker mode="rgb" class="ma-2" elevation="10" v-model="this.confettiColor"></v-color-picker>
                       </div>
-                      <v-btn class="ma-3 " color="red">
-                        <h3 class="">1000</h3>
-                        <v-img
-                            @click="buyConfetti()"
-                            class="w-75" src="../src/assets/coin.png"></v-img>
-                      </v-btn>
                     </v-col>
+
+                    <v-col>
+                      <v-card-title class="d-flex justify-space-evenly">
+                        <div class="text-h3">background Color</div>
+                      </v-card-title>
+
+                      <div class="d-flex justify-center">
+                        <v-color-picker mode="rgb" class="ma-2" elevation="10" v-model="this.backgroundColor"></v-color-picker>
+                      </div>
+
+                    </v-col>
+
+
                   </v-row>
+                  <v-btn class="ma-3 " color="red">
+                    <h3 class="">1000</h3>
+                    <v-img
+                        @click="buyConfetti()"
+                        class="w-75" src="../src/assets/coin.png"></v-img>
+                  </v-btn>
 
                 </v-card>
 
@@ -160,6 +171,7 @@ export default {
 
     },
     buyBackground(profilePicture) {
+
       if (this.money >= 1000) {
         this.money -= 1000;
 
@@ -168,43 +180,37 @@ export default {
 
         user.updateUserData(this.userData);
 
-        console.log("money wasted")
 
         this.socket.emit('updateProfilePicture', this.userData.username, profilePicture);
         this.socket.emit('wasteMoney', this.userData.username, this.money);
-        window.location.reload();
       }
     },
 
 
-      buyConfetti()
-      {
-        console.log("test")
-        if (this.money >= 1000) {
-          this.money -= 1000;
+    buyConfetti() {
+      if (this.money >= 1000) {
+        this.money -= 1000;
 
-          this.userData.money = this.money;
-          this.userData.backgroundColor = this.backgroundColor;
-          this.userData.confettiColor = this.confettiColor;
-          user.updateUserData(this.userData);
+        this.userData.money = this.money;
+        this.userData.backgroundColor = this.backgroundColor;
+        this.userData.confettiColor = this.confettiColor;
+        user.updateUserData(this.userData);
 
-          console.log("money wasted")
-          this.socket.emit('updateConfetti', this.userData.username, this.confettiColor, this.backgroundColor);
-          this.socket.emit('wasteMoney', this.userData.username, this.money);
-          window.location.reload();
-        }
-      },
-      async explode()
-      {
-        this.visible = false; // Hide the confetti
-        await nextTick();
-        this.visible = true; // Show the confetti again, triggering the explosion
-        },
+        console.log("money wasted")
+        this.socket.emit('updateConfetti', this.userData.username, this.confettiColor, this.backgroundColor);
+        this.socket.emit('wasteMoney', this.userData.username, this.money);
+      }
+    },
+    async explode() {
+      this.visible = false; // Hide the confetti
+      await nextTick();
+      this.visible = true; // Show the confetti again, triggering the explosion
+    },
 
 
-    }
+  }
 
-  }</script>
+}</script>
 
 <style>
 

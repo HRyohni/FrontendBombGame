@@ -13,9 +13,11 @@
                 label="Combobox"
                 :items="this.roomNames"
                 v-model="this.selectedRoomName"
+                class="mb-10"
             ></v-combobox>
+
             <div class="d-flex ajustify-center" v-for="data in this.roomList">
-              <v-card :color="this.randomColor()" class="ma-3 pa-2" width="100%">
+              <v-card v-if="this.selectedRoomName === null  || data.Room.roomName.includes(this.selectedRoomName)" :color="this.randomColor()" class="ma-3 pa-2" width="100%">
                 <div>
                   <div class="d-flex">
                     <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ data.Room.roomName }}</b></div>
@@ -34,7 +36,6 @@
                     </v-col>
                   </v-row>
                   <div class="justify-space-between d-flex">
-                    <h3>host {{ data.Room.host }}</h3>
                     <v-btn :disabled="data.Room.playersName.length>=6" :to="'game/'+data._id" class="ma-4" color="blue">
                       Join
                     </v-btn>
@@ -88,7 +89,7 @@ export default {
     searchQuery: ""
   }),
   async mounted() {
-    console.log("kurac")
+
     this.username = await this.fetchUserData();
     await this.fetchAllRooms();
 

@@ -1,5 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router'
-
+import store from "../../store" ;
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
@@ -28,6 +28,12 @@ const router = createRouter({
             name: 'newroom',
             component: () => import('../views/newRoomView.vue')
         },
+        {
+            path: '/new-room/:gamename',
+            name: 'newroomProp',
+            component: () => import('../views/newRoomView.vue'),
+            props: true // Pass route params as props to the component
+        },
 
         {
             path: '/room-list',
@@ -40,19 +46,28 @@ const router = createRouter({
             name: 'createNewGamemode',
             component: () => import('../views/CreateGamemodeView.vue')
         },
-        {
-            path: '/create-gamemode/:gamename',
-            name: 'createNewGamemodeWithName',
-            component: () => import('../views/CreateGamemodeView.vue'),
-            props: true // Pass route params as props to the component
-        },
+
         {
             path: '/shop',
             name: 'shop',
             component: () => import('../views/ShopView.vue')
         },
+        {
+            path: '/scoreboard',
+            name: 'scoreboard',
+            component: () => import('../views/ScoreboardView.vue')
+        },
 
     ]
 })
+router.beforeResolve((to, from, next) => {
+    const user = store.getters.getUser;
+    console.log('username: ', user);
+    if (!user && to.path !== "/login-register") {
+        next("/login-register");
+    } else {
+        next(); // Call next only once
+    }
+});
 
 export default router

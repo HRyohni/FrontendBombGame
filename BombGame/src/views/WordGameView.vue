@@ -63,7 +63,6 @@ import ConfettiExplosion from "vue-confetti-explosion";
     <v-btn color="black" @click="this.looseLife()" class="ma-2">LLife</v-btn>
 
     {{ this.timer }} {{ this.isCurrentPlayersTurn }}
-    <h1 class="d-flex justify-center">GET READY!</h1>
     <div class="d-flex justify-center">
       <div class="" v-for="user in this.roomSettings.playersName" :key="user">
         <div class="ma-2 ml-4 mr-4 ">
@@ -125,7 +124,7 @@ import ConfettiExplosion from "vue-confetti-explosion";
 
   <div class="ma-4">
 
-    <h1 class="d-flex justify-center">Guess word</h1>
+    <h1 v-if="this.gameModeSettings" class="d-flex justify-center">Guess {{this.gameModeSettings.name}}</h1>
     <div class="d-flex justify-center">
       <v-progress-circular color="red" class="d-flex justify-center" :model-value="progressValue" :size="80" :width="7">
         <h1 class="d-flex justify-center">{{ this.letters }}</h1>
@@ -216,29 +215,29 @@ export default {
   },
 
   async mounted() {
-    this.socket = io("http://localhost:3000"); // Connect to the Socket.IO server
+  this.socket = io("http://localhost:3000"); // Connect to the Socket.IO server
 
-    this.playersData = await this.fetchUserData();
-    this.username = this.playersData.username;
-    this.roomSettings = await this.fetchRoomSettings(this.gameID);
+  this.playersData = await this.fetchUserData();
+  this.username = this.playersData.username;
+  this.roomSettings = await this.fetchRoomSettings(this.gameID);
 
-    this.playersHp = this.roomSettings.lives;
-    this.serverTimer = parseInt(this.roomSettings.timer.slice(0, -1))
-    this.timer = this.serverTimer;
-    this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
-
-
-
-    await this.updateSettings();
-    await this.joinSocketRoom(this.gameID, this.username)
-    this.allPlayers = this.setAllPlayers(this.roomSettings, this.playersHp);
-    this.checkHost();
+  this.playersHp = this.roomSettings.lives;
+  this.serverTimer = parseInt(this.roomSettings.timer.slice(0, -1))
+  this.timer = this.serverTimer;
+   this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
 
 
-    this.roomSettings.playersName.forEach(async (player) => {
-      const profilePicture = await this.getUserProfilePicture(player);
-      this.playerProfilePictures.push({username: player, profilePicture: profilePicture}) ;
-    });
+
+  await this.updateSettings();
+  await this.joinSocketRoom(this.gameID, this.username)
+  this.allPlayers = this.setAllPlayers(this.roomSettings, this.playersHp);
+  this.checkHost();
+
+
+   this.roomSettings.playersName.forEach(async (player) => {
+     const profilePicture = await this.getUserProfilePicture(player);
+     this.playerProfilePictures.push({username: player, profilePicture: profilePicture}) ;
+   });
 
 
 
@@ -385,7 +384,7 @@ export default {
       if (!this.roomSettings.playersName.includes(this.username)) {
         this.roomSettings.playersName.push(this.username);
       }
-      await axios.post("/api/room/update-room", {roomID: this.gameID, data: this.roomSettings});
+      await axios.post("https://backendbombgane.onrender.com/api/room/update-room", {roomID: this.gameID, data: this.roomSettings});
     },
 
     async joinSocketRoom(roomName, username) {
