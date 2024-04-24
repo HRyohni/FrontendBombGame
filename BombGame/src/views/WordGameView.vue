@@ -128,7 +128,7 @@ import ConfettiExplosion from "vue-confetti-explosion";
     <div class="ma-8">
       <v-row>
         <v-col  class="justify-center d-flex">
-          <v-text-field  :focused="true" :single-line="true" class="justify-center" v-model="guessedWord"  suffix="ENT"
+          <v-text-field  :focused="true" :single-line="true" class="justify-center" :disabled="!currentPlayerName" v-model="guessedWord"  suffix="ENT"
                         @keydown.enter.prevent="checkWord(guessedWord)"
                         hint="write a word" placeholder="Guess word"></v-text-field>
         </v-col>

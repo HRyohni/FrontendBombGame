@@ -120,6 +120,21 @@ import ConfettiExplosion from "vue-confetti-explosion";
     </v-col>
 
   </v-row>
+  <v-snackbar
+      v-model="isToast"
+  >
+
+    <template v-slot:actions>
+      <v-btn
+          color="pink"
+          variant="text"
+          @click="isToast = false"
+      >
+        Close
+      </v-btn>
+      <h4>{{ toastMsg }}</h4>
+    </template>
+  </v-snackbar>
 
 </template>
 
@@ -133,6 +148,9 @@ export default {
 
 
   data: () => ({
+    // Toast
+    toastMsg: "no msg",
+    isToast: false,
     userData: null,
     tab: null,
     socket: null,
@@ -141,6 +159,8 @@ export default {
     confettiColor: null,
     backgroundColor: null,
     profilePics: ["img1.png", "img2.png", "img3.png", "img4.png", "img5.png", "img6.png", "img7.png", "img8.png", "img9.png", "img10.png", "img11.png"]
+
+
   }),
   async mounted() {
 
@@ -178,6 +198,7 @@ export default {
 
         this.socket.emit('updateProfilePicture', this.userData.username, profilePicture);
         this.socket.emit('wasteMoney', this.userData.username, this.userData.money);
+        this.toastMsg("you bought background!")
       }
     },
 
@@ -193,12 +214,18 @@ export default {
         console.log("money wasted")
         this.socket.emit('updateConfetti', this.userData.username, this.confettiColor, this.backgroundColor);
         this.socket.emit('wasteMoney', this.userData.username, this.userData.money);
+        this.toastMsg("you bought confetti!")
       }
     },
     async explode() {
       this.visible = false; // Hide the confetti
       await nextTick();
       this.visible = true; // Show the confetti again, triggering the explosion
+    },
+
+    async showToast(message) {
+      this.toastMsg = message;
+      this.isToast = !this.isToast;
     },
 
 
