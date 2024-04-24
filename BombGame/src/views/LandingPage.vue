@@ -23,23 +23,31 @@ import {gameModeMethods} from "../../handelers/gameModeHandeler";
           <v-carousel-item v-for="(slide, i) in gamemodes" :key="i">
 
             <v-sheet
-                v-if="slide.Author === 'yohni'"
+
+
                 :color="colors[i]"
                 height="100%"
             >
+              <div>
 
-              <div class="d-flex fill-height justify-center align-center">
-                <div class="text-h2">
-                  {{ slide.name }}
+                <div class="d-flex fill-height justify-center align-center">
+                  <div class="justify-center">
+                    <v-row class="mt-15" justify="center">
+                      <v-col class="text-h3">
+                        {{ slide.name }}
+                      </v-col>
+
+                      <v-col>
+                        <div class="text-h5">By{{ ' ' + slide.Author }}</div>
+                      </v-col>
+
+
+                      <v-btn @click="startGame(slide.name)" variant="outlined" class="ml-15">Create Game</v-btn>
+                    </v-row>
+                  </div>
                 </div>
-                {{ slide.Author }}
-                <div>
 
-
-                </div>
-                <v-btn @click="this.startGame(slide.name)" variant="outlined" class="ml-15">Create Game</v-btn>
               </div>
-
 
             </v-sheet>
 
@@ -55,7 +63,7 @@ import {gameModeMethods} from "../../handelers/gameModeHandeler";
       <v-combobox
           style="width: 100px"
           label="Search Game Mode"
-          :items="this.gamemodeNames"
+          :items="gamemodeNames"
           variant="outlined"
       ></v-combobox>
     </div>
@@ -64,6 +72,7 @@ import {gameModeMethods} from "../../handelers/gameModeHandeler";
     <v-card elevation="3" class="pa-2" color="#2F313D">
       <v-row style="height: 500px" class="overflow-x-auto">
         <v-col class="d-inline" v-for="gamemode in gamemodes">
+
           <gamemode-card
               v-if="gamemode.Author !== 'yohni'"
               :game-mode-author="gamemode.Author"
@@ -105,9 +114,7 @@ export default {
       'red lighten-1',
 
     ],
-    slides: [
-
-    ],
+    slides: [],
   }),
   async mounted() {
 
@@ -120,8 +127,9 @@ export default {
 
   methods: {
     fetchAllGamemodes: function () {
-      axios.get('/api/gamemode/fetch-gamemodes')
+      axios.get('https://backendbombgane.onrender.com/api/gamemode/fetch-gamemodes')
           .then(async (response) => {
+            console.log(response);
             this.gamemodes = response.data;
             for (let gamemode in this.gamemodes) {
               this.gamemodeNames.push(this.gamemodes[gamemode].name);
@@ -134,9 +142,8 @@ export default {
           })
     },
 
-    startGame(gamemodeName)
-    {
-      router.push("/new-room/"+gamemodeName)
+    startGame(gamemodeName) {
+      router.push("/new-room/" + gamemodeName)
     }
 
   },

@@ -31,9 +31,10 @@ const router = createRouter({
         {
             path: '/new-room/:gamename',
             name: 'newroomProp',
-            component: () => import('../views/newRoomView.vue'),
-            props: true // Pass route params as props to the component
+            component: (gameModeName) => import('../views/newRoomView.vue'),
         },
+
+
 
         {
             path: '/room-list',
@@ -67,6 +68,7 @@ router.beforeResolve((to, from, next) => {
         next("/login-register");
     } else {
         next(); // Call next only once
+
     }
 });
 

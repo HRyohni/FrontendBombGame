@@ -23,12 +23,12 @@
                 <v-row>
                   <v-col>
                     <div class="d-flex justify-space-between justify-center align-center">
-                      <div v-if="username.profilePicture" class="ma-3 text-md-h1 text-sm-h3">
-                        <v-img width="200" :src="username.profilePicture"></v-img>
+                      <div v-if="username.profilePicture" class="ma-3 text-md-h1 text-sm-h3 d-flex justify-center">
+                        <v-img width="100" :src="username.profilePicture"></v-img>
                       </div>
-                      <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ username.username }}</b></div>
-                    </div>
 
+                    </div>
+                    <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ username.username }}</b></div>
                     <div class="justify-space-between d-flex">
                     </div>
                   </v-col>
@@ -44,10 +44,11 @@
             </div>
             <div class="d-flex justify-center " v-for="(data,index) in this.allUsers">
 
-              <v-card :loading="true" :border="randomColor()" :elevation="15" v-if="index+1 === 1"  :color="this.randomColor()" class="ma-3 pa-2" width="100%">
+              <v-card :loading="true" :border="randomColor()" :elevation="15" v-if="index+1 === 1"
+                      :color="randomColor()" class="ma-3 pa-2" width="100%">
 
                 <div class="ma-3 text-md-h3 text-sm-h3 d-flex justify-center">
-                  <FontAwesomeIcon  :icon="trophyIcon"/>
+                  <FontAwesomeIcon :icon="trophyIcon"/>
                 </div>
                 <div class="ma-3 text-md-h3 text-sm-h3">{{ index + 1 }}</div>
                 <div class="d-flex justify-center">
@@ -59,15 +60,16 @@
                   <v-col>
                     <div class="d-flex justify-space-evenly align-center">
                       <div v-if="data.profilePicture" class="ma-3 text-md-h1 text-sm-h3">
-                        <v-img width="200" :src="data.profilePicture"></v-img>
+                        <v-img width="100" :src="data.profilePicture"></v-img>
                       </div>
-                      <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ data.username }}</b></div>
+
                     </div>
+                    <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ data.username }}</b></div>
                   </v-col>
                 </v-row>
               </v-card>
 
-              <v-card v-if="index+1 !== 1"  :color="this.randomColor()" class="ma-15 pa-2" width="100%">
+              <v-card v-if="index+1 !== 1" :color="randomColor()" class=" ma-2 pa-2" width="100%">
                 <div class="ma-3 text-md-h3 text-sm-h3">{{ index + 1 }}</div>
                 <div class="d-flex justify-center">
                   <div class="ma-3 text-md-h1 text-sm-h3">score:</div>
@@ -77,10 +79,11 @@
                   <v-col>
                     <div class="d-flex justify-space-evenly align-center">
                       <div v-if="data.profilePicture" class="ma-3 text-md-h1 text-sm-h3">
-                        <v-img width="200" :src="data.profilePicture"></v-img>
+                        <v-img width="100" :src="data.profilePicture"></v-img>
                       </div>
-                      <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ data.username }}</b></div>
+
                     </div>
+                    <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ data.username }}</b></div>
                   </v-col>
                 </v-row>
               </v-card>
@@ -131,7 +134,7 @@ export default {
     this.username = await this.fetchUserData();
     this.fetchAllUsers()
 
-    this.socket = io("http://localhost:3000");
+    this.socket = io("https://backendbombgane.onrender.com");
 
   },
   computed: {
@@ -145,7 +148,7 @@ export default {
   methods: {
 
     fetchAllUsers() {
-      axios.get('/api/user/fetchAllUsers')
+      axios.get('https://backendbombgane.onrender.com/api/user/fetchAllUsers')
           .then(response => {
             this.allUsers = this.sortByScoreboard(response.data);
           })
@@ -179,7 +182,7 @@ export default {
 
 
     async fetchAllRooms() {
-      await axios.get('/api/room/fetch-rooms')
+      await axios.get('https://backendbombgane.onrender.com/api/room/fetch-rooms')
           .then(async (response) => {
             console.log(response);
             this.roomList = response.data.sort((a, b) => {

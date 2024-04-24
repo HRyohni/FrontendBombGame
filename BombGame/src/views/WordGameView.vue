@@ -16,17 +16,11 @@ import ConfettiExplosion from "vue-confetti-explosion";
       >
         Close
       </v-btn>
-      <h4>{{ this.toastMsg }}</h4>
+      <h4>{{ toastMsg }}</h4>
     </template>
   </v-snackbar>
 
-  <v-card :color="this.playersData.backgroundColor" v-if="this.overlayOn" class="pa-4">
-    <confetti-explosion :colors="[this.playersData.confettiColor]" ></confetti-explosion>
-    <h1 class="d-flex justify-center"><b>{{ this.winnersUsername + " " }}</b></h1>
-    <h1 class="d-flex justify-center">Wins</h1>
-    <h1 style="font-size: 60px" class="d-flex justify-center">{{ this.getPlayerScore(this.winnersUsername) }}</h1>
-    <h4 class="d-flex justify-center">score</h4>
-  </v-card>
+
 
 
   <v-navigation-drawer :width="292" color="#332941" location="right">
@@ -40,7 +34,7 @@ import ConfettiExplosion from "vue-confetti-explosion";
       <v-card class="pa-2 " height="500" color="#332941">
 
         <ul>
-          <li v-for="(msg, index) in messages" :key="index">
+          <li class="overflow-x-auto" v-for="(msg, index) in messages" :key="index">
             <div>
               {{ msg.username + ": " + msg.message }}
             </div>
@@ -55,93 +49,98 @@ import ConfettiExplosion from "vue-confetti-explosion";
     </div>
   </v-navigation-drawer>
 
-  <v-card color="#3b3d4b">
-    <v-btn color="black" class="ma-1" @click="this.leaveRoom">Lroom</v-btn>
-    <v-btn @click="this.startTimer();" class="ma-2" color="black">STtimer</v-btn>
-    <v-btn @click="forceStopAndResetTimer();" class="ma-2" color="black">S Ptimer</v-btn>
-    <v-btn color="black" @click="testConnection()" class="ma-2">Tsend</v-btn>
-    <v-btn color="black" @click="this.looseLife()" class="ma-2">LLife</v-btn>
 
-    {{ this.timer }} {{ this.isCurrentPlayersTurn }}
-    <div class="d-flex justify-center">
-      <div class="" v-for="user in this.roomSettings.playersName" :key="user">
-        <div class="ma-2 ml-4 mr-4 ">
+  <!--    <v-btn color="black" class="ma-1" @click="leaveRoom">Lroom</v-btn>-->
+  <!--    <v-btn @click="startTimer();" class="ma-2" color="black">STtimer</v-btn>-->
+  <!--    <v-btn @click="forceStopAndResetTimer();" class="ma-2" color="black">S Ptimer</v-btn>-->
+  <!--    <v-btn color="black" @click="testConnection()" class="ma-2">Tsend</v-btn>-->
+  <!--    <v-btn color="black" @click="looseLife()" class="ma-2">LLife</v-btn>-->
 
-          <div class="d-flex justify-center">
-            <div class="ma-1" v-for="heartIndex in getPlayerLife(user)">
-              <v-img width="30"
-                     src="https://cdn.discordapp.com/attachments/902618947759788043/1225908018621710408/hp.png?ex=6622d6cf&is=661061cf&hm=658ca57b5475bd85bc5d8a8e78d4e5d5d3b93f31f8e59982a818804c40f28635&"></v-img>
-            </div>
+  <!--    {{ timer }} {{ isCurrentPlayersTurn }}-->
+  <div class="justify-end d-flex ma-5">
+    <v-btn v-if="!isPlayerReady" @click="setNotReady()" variant="outlined"
+           class="justify-center d-flex mr-1" color="red">set Not Ready
+    </v-btn>
+    <v-btn v-if="isPlayerReady" @click="setReady()" class="justify-center d-flex mr-1" color="green">set
+      Ready
+    </v-btn>
+    <v-btn v-if="isPlayerHost && !isGameInProgress" :disabled="!isAllPlayersReady"
+           @click="startGame()" color="red">Start Game
+    </v-btn>
+  </div>
+
+<div class="justify-center d-flex">
+  <v-row>
+    <v-col v-for="user in roomSettings.playersName" :key="user" cols="12" sm="6" md="4" lg="3">
+      <div class="ma-2 ml-4 mr-4">
+        <div class="d-flex justify-center">
+          <div class="ma-1" v-for="heartIndex in getPlayerLife(user)">
+            <v-img width="30" src="/hp.png"></v-img>
           </div>
-
-          <div class="justify-center d-flex">
-            <ConfettiExplosion :particleCount="20" :force="0.01"/>
-            <v-avatar class="d-flex justify-center"
-                      :class="{ 'outlineTurn': this.currentPlayerName === user }"
-                      :size="70">
-              <template v-if="true">
-                <v-img :src="this.setProfilePicture(user)" width="70" height="70"></v-img>
-              </template>
-              <template v-else>
-
-                <v-progress-circular indeterminate color="primary"></v-progress-circular>
-              </template>
-            </v-avatar>
-
-
-          </div>
-
-          <h1 class="d-flex justify-center ma-2">{{ this.getPlayerScore(user) }}</h1>
-          <p class="d-flex justify-center">{{ user }}</p>
-          <div class="d-flex justify-center">
-            <v-btn variant="outlined" :disabled="true" v-if="!isPlayerReadyStatus(user)" color="green">READY</v-btn>
-            <v-btn v-if="isPlayerReadyStatus(user)" color="green">READY</v-btn>
-          </div>
-
         </div>
 
+        <div class="justify-center d-flex">
+          <ConfettiExplosion :particleCount="20" :force="0.01"/>
+          <v-avatar class="d-flex justify-center d-sm-none d-md-flex " :class="{ 'outlineTurn': currentPlayerName === user }" size="70">
+            <template v-if="true">
+              <v-img :src="'/'+setProfilePicture(user)" width="70" height="70"></v-img>
+            </template>
+            <template v-else>
+              <v-progress-circular indeterminate color="primary"></v-progress-circular>
+            </template>
+          </v-avatar>
+        </div>
 
+        <h1 class="d-flex justify-center ma-2">{{ getPlayerScore(user) }}</h1>
+        <p class="d-flex justify-center">{{ user }}</p>
+        <div class="d-flex justify-center">
+          <v-btn variant="outlined" :disabled="!isPlayerReadyStatus(user)" color="green">READY</v-btn>
+        </div>
       </div>
-    </div>
+    </v-col>
+  </v-row>
+</div>
 
-    <div class="justify-center d-flex ma-2">
 
-
-    </div>
-
-    <div class="justify-end d-flex ma-5">
-      <v-btn v-if="!this.isPlayerReady" @click="this.setNotReady()" variant="outlined"
-             class="justify-center d-flex mr-1" color="red">set Not Ready
-      </v-btn>
-      <v-btn v-if="this.isPlayerReady" @click="this.setReady()" class="justify-center d-flex mr-1" color="green">set
-        Ready
-      </v-btn>
-      <v-btn v-if="this.isPlayerHost && !this.isGameInProgress" :disabled="!this.isAllPlayersReady"
-             @click="this.startGame()" color="red">Start Game
-      </v-btn>
-    </div>
-  </v-card>
 
   <div class="ma-4">
 
-    <h1 v-if="this.gameModeSettings" class="d-flex justify-center">Guess {{this.gameModeSettings.name}}</h1>
+    <v-card :color="playersData.backgroundColor" v-if="overlayOn" class="pa-4">
+      <confetti-explosion :colors="[playersData.confettiColor]"></confetti-explosion>
+      <h1 class="d-flex justify-center"><b>{{ winnersUsername + " " }}</b></h1>
+      <h1 class="d-flex justify-center">Wins</h1>
+      <h1 style="font-size: 60px" class="d-flex justify-center">{{ getPlayerScore(winnersUsername) }}</h1>
+      <h4 class="d-flex justify-center">score</h4>
+    </v-card>
+
+    <h1 v-if="gameModeSettings" class="d-flex justify-center">{{gameModeSettings.name}}</h1>
     <div class="d-flex justify-center">
       <v-progress-circular color="red" class="d-flex justify-center" :model-value="progressValue" :size="80" :width="7">
-        <h1 class="d-flex justify-center">{{ this.letters }}</h1>
+        <h1 class="d-flex justify-center">{{ letters }}</h1>
       </v-progress-circular>
+    </div>
+    <div class="d-flex justify-center">
+      <h3 v-if="isCurrentPlayersTurn">Your Turn</h3>
     </div>
 
 
-    <div class="ma-15 d-flex justify-center">
-      <v-text-field v-model="guessedWord" :disabled="!this.isCurrentPlayersTurn" suffix="ENT"
-                    @keydown.enter.prevent="checkWord(guessedWord)"
-                    hint="write a word" placeholder="write a word"></v-text-field>
+
+    <div class="ma-8">
+      <v-row>
+        <v-col  class="justify-center d-flex">
+          <v-text-field  :focused="true" :single-line="true" class="justify-center" v-model="guessedWord"  suffix="ENT"
+                        @keydown.enter.prevent="checkWord(guessedWord)"
+                        hint="write a word" placeholder="Guess word"></v-text-field>
+        </v-col>
+      </v-row>
+
       <v-btn @click="checkWord(guessedWord)" class="ma-2" color="green">Guess</v-btn>
 
     </div>
 
 
   </div>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 </template>
 
 <script>
@@ -199,7 +198,8 @@ export default {
 
   }),
   beforeUnmount() {
-    // clearInterval(this.timerInterval);
+     clearInterval(this.timerInterval);
+     this.forceStopAndResetTimer()
   },
 
   async unmounted() {
@@ -215,30 +215,28 @@ export default {
   },
 
   async mounted() {
-  this.socket = io("http://localhost:3000"); // Connect to the Socket.IO server
+    this.socket = io("https://backendbombgane.onrender.com"); // Connect to the Socket.IO server
 
-  this.playersData = await this.fetchUserData();
-  this.username = this.playersData.username;
-  this.roomSettings = await this.fetchRoomSettings(this.gameID);
+    this.playersData = await this.fetchUserData();
+    this.username = this.playersData.username;
+    this.roomSettings = await this.fetchRoomSettings(this.gameID);
 
-  this.playersHp = this.roomSettings.lives;
-  this.serverTimer = parseInt(this.roomSettings.timer.slice(0, -1))
-  this.timer = this.serverTimer;
-   this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
-
-
-
-  await this.updateSettings();
-  await this.joinSocketRoom(this.gameID, this.username)
-  this.allPlayers = this.setAllPlayers(this.roomSettings, this.playersHp);
-  this.checkHost();
+    this.playersHp = this.roomSettings.lives;
+    this.serverTimer = parseInt(this.roomSettings.timer.slice(0, -1))
+    this.timer = this.serverTimer;
+    this.gameModeSettings = await this.fetchGameModeSettings(this.gameID);
 
 
-   this.roomSettings.playersName.forEach(async (player) => {
-     const profilePicture = await this.getUserProfilePicture(player);
-     this.playerProfilePictures.push({username: player, profilePicture: profilePicture}) ;
-   });
+    await this.updateSettings();
+    await this.joinSocketRoom(this.gameID, this.username)
+    this.allPlayers = this.setAllPlayers(this.roomSettings, this.playersHp);
+    this.checkHost();
 
+
+    this.roomSettings.playersName.forEach(async (player) => {
+      const profilePicture = await this.getUserProfilePicture(player);
+      this.playerProfilePictures.push({username: player, profilePicture: profilePicture});
+    });
 
 
     this.socket.on('newMessage', async (username, message) => {
@@ -283,11 +281,12 @@ export default {
     });
 
     this.socket.on('newPlayerJoined', async (player) => {
+      this.$forceUpdate();
       this.roomSettings = await this.fetchRoomSettings(this.gameID);
       this.playerProfilePictures = []
       this.roomSettings.playersName.forEach(async (player) => {
         const profilePicture = await this.getUserProfilePicture(player);
-        this.playerProfilePictures.push({username: player, profilePicture: profilePicture}) ;
+        this.playerProfilePictures.push({username: player, profilePicture: profilePicture});
       });
     });
 
@@ -362,7 +361,7 @@ export default {
 
     async fetchRoomSettings(roomID) {
       try {
-        const response = await axios.get('/api/room/fetch-room/' + roomID);
+        const response = await axios.get('https://backendbombgane.onrender.com/api/room/fetch-room/' + roomID);
         return response.data;
       } catch (error) {
         console.error(error);
@@ -372,7 +371,7 @@ export default {
 
     async fetchGameModeSettings(GameModeName) {
       try {
-        const response = await axios.get('/api/gameMode/' + GameModeName);
+        const response = await axios.get('https://backendbombgane.onrender.com/api/gameMode/' + GameModeName);
         return response.data;
       } catch (error) {
         console.error(error);
@@ -384,7 +383,10 @@ export default {
       if (!this.roomSettings.playersName.includes(this.username)) {
         this.roomSettings.playersName.push(this.username);
       }
-      await axios.post("https://backendbombgane.onrender.com/api/room/update-room", {roomID: this.gameID, data: this.roomSettings});
+      await axios.post("https://backendbombgane.onrender.com/api/room/update-room", {
+        roomID: this.gameID,
+        data: this.roomSettings
+      });
     },
 
     async joinSocketRoom(roomName, username) {
@@ -433,6 +435,7 @@ export default {
           clearInterval(this.timerInterval); // Stop the timer interval
           this.timer = parseInt(this.roomSettings.timer.slice(0, -1))
           this.socket.emit('timerUpdate', this.gameID, this.timer); //reset time back to 10
+          this.guessedWord = ""
           this.nextTurn();
 
         }
@@ -479,7 +482,8 @@ export default {
 
 
     checkWord: async function (word) {
-      if (word.includes(this.letters)) {
+
+      if (word.includes(this.letters) && this.isCurrentPlayersTurn) {
         this.socket.emit('checkCorrectWord', this.gameID, word, this.gameModeSettings.name);
       }
       this.clearText();
@@ -610,7 +614,7 @@ export default {
 
     async getUserProfilePicture(username) {
       try {
-        const response = await axios.get(`/api/user/profilePicture/${username}`);
+        const response = await axios.get(`https://backendbombgane.onrender.com/api/user/profilePicture/${username}`);
 
         return response.data;
       } catch (error) {
@@ -619,18 +623,13 @@ export default {
       }
     },
 
-    setProfilePicture(user)
-    {
-
+    setProfilePicture(user) {
       try {
         return this.playerProfilePictures.find(item => item.username === user).profilePicture;
-      }
-      catch (e)
-      {
+      } catch (e) {
       }
     }
   },
-
 
 
 }

@@ -11,13 +11,13 @@
 
             <v-combobox
                 label="Combobox"
-                :items="this.roomNames"
-                v-model="this.selectedRoomName"
+                :items="roomNames"
+                v-model="selectedRoomName"
                 class="mb-10"
             ></v-combobox>
 
-            <div class="d-flex ajustify-center" v-for="data in this.roomList">
-              <v-card v-if="this.selectedRoomName === null  || data.Room.roomName.includes(this.selectedRoomName)" :color="this.randomColor()" class="ma-3 pa-2" width="100%">
+            <div class="d-flex ajustify-center" v-for="data in roomList">
+              <v-card v-if="selectedRoomName === null  || data.Room.roomName.includes(selectedRoomName)" :color="randomColor()" class="ma-3 pa-2" width="100%">
                 <div>
                   <div class="d-flex">
                     <div class="ma-3 text-md-h1 text-sm-h3"><b>{{ data.Room.roomName }}</b></div>
@@ -95,7 +95,7 @@ export default {
 
     console.log("wat");
     console.log(this.roomNames);
-    this.socket = io("http://localhost:3000");
+    this.socket = io("https://backendbombgane.onrender.com");
 
   },
   computed: {
@@ -108,7 +108,7 @@ export default {
   },
   methods: {
     async fetchAllRooms() {
-      await axios.get('/api/room/fetch-rooms')
+      await axios.get('https://backendbombgane.onrender.com/api/room/fetch-rooms')
           .then(async (response) => {
             console.log(response);
             this.roomList = response.data.sort((a, b) => {

@@ -8,9 +8,10 @@
     <v-navigation-drawer elevation="6" expand-on-hover color="#2F313D" :rail="true" class="d-inline">
       <v-list>
         <v-list-item :prepend-avatar="user.profilePicture" v-if="user" :title="user.username"
-                     :subtitle="user.mail"></v-list-item>
+                     :subtitle="'score: '+user.scoreboard"></v-list-item>
 
       </v-list>
+
       <v-divider></v-divider>
       <v-list density="compact" nav>
         <!-- Navigation Items with Icons -->
@@ -132,14 +133,20 @@ export default {
     ...mapGetters({ user: "getUser" }),
   },
   async mounted() {
-    this.socket = io("http://localhost:3000");
-    console.log("sssss",this.user);
-    this.userData = user;
+    try {
+      this.socket = io("https://backendbombgane.onrender.com");
+      this.userData = user;
 
-    this.socket.on('changeUserData', () => {
-      console.log("data changed");
-      this.userData = this.fetchUserData();
-    });
+      this.socket.on('changeUserData', () => {
+        console.log("data changed");
+        this.userData = this.fetchUserData();
+      });
+    }
+    catch (e)
+    {
+      console.log("app error");
+    }
+
   },
   methods: {
     LogOut() {

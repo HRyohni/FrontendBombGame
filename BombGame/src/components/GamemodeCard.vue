@@ -11,7 +11,7 @@ const props = defineProps({
 <template>
   <v-container class="d-inline">
 
-    <v-card style="min-width: 200px" image="./src/assets/bomb_icon.png" elevation="4"
+    <v-card style="min-width: 200px" image="/bomb_icon.png" elevation="4"
             color="grey-darken-4" height="250"
             width="300">
       <h1 class="ma-2">{{ props.gameModeName }}</h1>

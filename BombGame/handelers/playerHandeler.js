@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import {user} from "./UserHandeler";
 
-const socket = io('http://localhost:3000'); // Replace with your server URL
+const socket = io('/'); // Replace with your server URL
 
 function connectToRoom(roomName) {
     socket.join(roomName);

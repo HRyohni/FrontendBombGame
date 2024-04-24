@@ -20,14 +20,14 @@ import io from 'socket.io-client';
               <v-expansion-panel color="#21232B" title="Gamemode name"
                                  text="Name your room so other players can find it."></v-expansion-panel>
             </v-expansion-panels>
-            <v-text-field variant="outlined" hint="write" v-model="this.GamemodeName"></v-text-field>
+            <v-text-field variant="outlined" hint="write" v-model="GamemodeName"></v-text-field>
 
 
             <v-expansion-panels class="mb-3">
               <v-expansion-panel color="#21232B" title="Game Modes" text="Pick Game Mode to play."></v-expansion-panel>
             </v-expansion-panels>
             <v-text-field variant="outlined" hint="what gamemode you want to play"
-                          v-model="this.gameModeDescription"></v-text-field>
+                          v-model="gameModeDescription"></v-text-field>
 
             <v-expansion-panels class="mb-3">
               <v-expansion-panel color="#21232B" title="Words"
@@ -35,14 +35,14 @@ import io from 'socket.io-client';
             </v-expansion-panels>
 
             <v-text-field variant="outlined" hint="Example colors: red yellow green white black "
-                          v-model="this.words"></v-text-field>
+                          v-model="words"></v-text-field>
 
 
           </div>
 
           <div class="d-flex justify-space-between">
-            <v-btn @click="this.CancelCreatingRoom()" class="ma-2" color="red">Cancel</v-btn>
-            <v-btn class="ma-2" color="blue" @click="this.createGamemode()">Create</v-btn>
+            <v-btn @click="CancelCreatingRoom()" class="ma-2" color="red">Cancel</v-btn>
+            <v-btn class="ma-2" color="blue" @click="createGamemode()">Create</v-btn>
           </div>
         </v-card>
       </v-col>
@@ -63,14 +63,14 @@ import io from 'socket.io-client';
             </v-expansion-panels>
 
             <v-text-field variant="outlined" hint="put description of gamemode"
-                          v-model="this.GamemodeName"></v-text-field>
+                          v-model="GamemodeName"></v-text-field>
 
 
             <v-expansion-panels class="mb-3">
               <v-expansion-panel color="#21232B" title="Description" text="Give players info about gamemode"></v-expansion-panel>
             </v-expansion-panels>
             <v-text-field variant="outlined" hint="put description of gamemode"
-                          v-model="this.gameModeDescription"></v-text-field>
+                          v-model="gameModeDescription"></v-text-field>
 
             <v-expansion-panels class="mb-3">
               <v-expansion-panel color="#21232B" title="Words"
@@ -78,14 +78,14 @@ import io from 'socket.io-client';
             </v-expansion-panels>
 
             <v-text-field variant="outlined" hint="Example colors: red yellow green white black "
-                          v-model="this.words"></v-text-field>
+                          v-model="words"></v-text-field>
 
 
           </div>
 
           <div class="d-flex justify-space-between">
-            <v-btn @click="this.CancelCreatingRoom" class="ma-2" color="red">Cancel</v-btn>
-            <v-btn @click="this.createGamemode()" class="ma-2" color="blue">Create</v-btn>
+            <v-btn @click="CancelCreatingRoom" class="ma-2" color="red">Cancel</v-btn>
+            <v-btn @click="createGamemode()" class="ma-2" color="blue">Create</v-btn>
           </div>
         </v-card>
       </v-col>
@@ -96,7 +96,7 @@ import io from 'socket.io-client';
       color="blue-red"
       v-model="snackbar"
   >
-    {{ this.snackbarMessage }}
+    {{ snackbarMessage }}
 
     <template v-slot:actions>
       <v-btn
@@ -179,7 +179,7 @@ export default {
     },
 
     checkIfNameAlreadyUsed(gamemodeName) {
-      axios.get('/api/gamemode/fetch-gamemodes')
+      axios.get('https://backendbombgane.onrender.com/api/gamemode/fetch-gamemodes')
           .then(async (response) => {
             const gamemode = response.data.map(gamemode => gamemode.name.toLowerCase());
             return gamemode.includes(gamemodeName.toLowerCase());
@@ -191,7 +191,7 @@ export default {
     },
 
     fetchGameModes(gamemodeName) {
-      axios.get('/api/gamemode/fetch-gamemodes')
+      axios.get('https://backendbombgane.onrender.com/api/gamemode/fetch-gamemodes')
           .then(async (response) => {
             this.gamemodes = response.data.map(gamemode => gamemode.name.toLowerCase());
             console.log(this.gamemodes);
